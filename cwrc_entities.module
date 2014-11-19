@@ -15,7 +15,7 @@ define('CWRC_ENTITY_VIEW', 'view entity');
 define('CWRC_ENTITY_CREATE', 'create entity');
 
 
-define('CWRC_OPEN_ANNOTATION_API_BASE', 'islandora/cwrc_entities/oa/');
+define('CWRC_OPEN_ANNOTATION_API_BASE', 'islandora/markupeditor/oa/');
 define('CWRC_OPEN_ANNOTATION_API_HASTARGET', CWRC_OPEN_ANNOTATION_API_BASE . 'hasTarget/');
 define('CWRC_OPEN_ANNOTATION_API_MINTURI', CWRC_OPEN_ANNOTATION_API_BASE . 'mintURI');
 define('CWRC_OPEN_ANNOTATION_API', CWRC_OPEN_ANNOTATION_API_BASE . 'annotation');
