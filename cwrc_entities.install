@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Install hooks for this module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function cwrc_entities_install() {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  islandora_install_solution_pack('cwrc_entities');
+}

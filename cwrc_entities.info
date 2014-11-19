@@ -1,0 +1,5 @@
+name = "Islandora CWRC Entities"
+description = "Module to handle the management of CWRC Entities"
+core = 7.x
+dependencies[] = islandora
+package = Islandora Solution Packs

@@ -1,0 +1,185 @@
+<?php
+
+/**
+ * @file
+ * Handles the creation/display of islandora:markupEditorCModel objects.
+ */
+
+global $base_url;
+
+
+define('CWRC_OPEN_ANNOTATION_VIEW', 'view open annotations');
+define('CWRC_OPEN_ANNOTATION_CREATE', 'create open annotations');
+
+define('CWRC_ENTITY_VIEW', 'view entity');
+define('CWRC_ENTITY_CREATE', 'create entity');
+
+
+define('CWRC_OPEN_ANNOTATION_API_BASE', 'islandora/cwrc_entities/oa/');
+define('CWRC_OPEN_ANNOTATION_API_HASTARGET', CWRC_OPEN_ANNOTATION_API_BASE . 'hasTarget/');
+define('CWRC_OPEN_ANNOTATION_API_MINTURI', CWRC_OPEN_ANNOTATION_API_BASE . 'mintURI');
+define('CWRC_OPEN_ANNOTATION_API', CWRC_OPEN_ANNOTATION_API_BASE . 'annotation');
+
+
+define('CWRC_ENTITES_API', 'services/ccm-api');
+define('CWRC_ENTITES_API_PLACE', CWRC_ENTITES_API . '/place');
+define('CWRC_ENTITES_API_PLACE_SEARCH', CWRC_ENTITES_API_PLACE . '/search');
+define('CWRC_ENTITES_API_PERSON', CWRC_ENTITES_API . '/person');
+define('CWRC_ENTITES_API_PERSON_SEARCH', CWRC_ENTITES_API_PERSON. '/search');
+define('CWRC_ENTITES_API_ORGANIZATION', CWRC_ENTITES_API . '/organization');
+define('CWRC_ENTITES_API_ORGANIZATION_SEARCH', CWRC_ENTITES_API_ORGANIZATION . '/search');
+define('CWRC_ENTITES_API_TITLE', CWRC_ENTITES_API . '/title');
+define('CWRC_ENTITES_API_TITLE_SEARCH', CWRC_ENTITES_API_TITLE. '/search');
+
+
+define('CWRC_ENTITES_PERSON_DS_ID', 'PERSON');
+
+define('CWRC_ENTITES_REQUEST_CONTENT_PARAM', 'data');
+
+
+
+/**
+ * Implements hook_menu().
+ */
+function cwrc_entities_menu() {
+
+  // ===== ENTITIES
+  // search
+  //$items[ISLANDORA_CWRC_ENTITES_API_PERSON_SEARCH] = array(
+  //
+  $items['islandora/cwrc_entities/search'] = array(
+    'title' => 'Person Entity Search',
+    'page callback' => 'cwrc_entities_search',
+    'page arguments' => array(
+      'info:fedora/cwrc:person-entityCModel'
+      , array('cwrc_entity_person_preferredForm_et','cwrc_entity_person_variantForm_et')
+      ),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/callbacks_entities.inc',
+    'access arguments' => array(CWRC_ENTITY_VIEW),
+  );
+
+
+  module_load_include('inc', 'islandora_workflow_rest', 'includes/basic_enum'); 
+
+  // PERSON Entity
+  //$items[ISLANDORA_CWRC_ENTITES_API_PERSON] = array(
+  $items['islandora/cwrc_entities/rest/person'] = array(
+    'title' => 'Person Entity REST Creation',
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/callbacks_entities.inc',
+    'access arguments' => array(CWRC_ENTITY_CREATE),
+    'page callback' => 'cwrc_entities_rest_api',
+    'page arguments' => array(
+      NULL
+      , 'info:fedora/cwrc:person-entityCModel'
+      , 'cwrc:d3c004f1-2b3f-4e51-a679-4f1c0da4fe17'
+      , array(
+          WorkflowConst::STAMP => 'cwrc:cre'
+          , WorkflowConst::CATEGORY => 'created'
+          , WorkflowConst::STATUS => 'c'
+        )
+      , '/xslt/entity_to_dc.xsl'
+      , CWRC_ENTITES_PERSON_DS_ID
+      ),
+    'type' => MENU_CALLBACK,
+  );
+
+ //$items[ISLANDORA_CWRC_ENTITES_API_PERSON . '%'] = array(
+  $items['islandora/cwrc_entities/rest/person/%'] = array(
+    'title' => 'Person Entity REST endpoint',
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/callbacks_entities.inc',
+    'access arguments' => array(CWRC_ENTITY_CREATE),
+    'page callback' => 'cwrc_entities_rest_api',
+    'page arguments' => array(
+      4
+      , NULL
+      , NULL
+      , array(
+          WorkflowConst::STAMP => 'cwrc:evr'
+          , WorkflowConst::CATEGORY => 'content_contribution'
+          , WorkflowConst::STATUS => 'c'
+        )
+      , '/xslt/entity_to_dc.xsl'
+      , CWRC_ENTITES_PERSON_DS_ID
+      ),
+  );
+
+
+    // OA Annotatation API
+
+  //$items['islandora/markupeditor/oa/mintURI'] = array(
+  $items[CWRC_OPEN_ANNOTATION_API_MINTURI] = array(
+    'title' => 'Open Annotation URI minting',
+    'page callback' => 'cwrc_entities_oa_mintURI',
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/callbacks_oa.inc',
+    'access arguments' => array(CWRC_OPEN_ANNOTATION_CREATE),
+  );
+
+  $items[CWRC_OPEN_ANNOTATION_API_MINTURI . '/%'] = array(
+    'title' => 'Open Annotation URI minting',
+    'page callback' => 'cwrc_entities_oa_mintURI',
+    'page arguments' => array(4),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/callbacks_oa.inc',
+    'access arguments' => array(CWRC_OPEN_ANNOTATION_CREATE),
+  );
+
+  $items[CWRC_OPEN_ANNOTATION_API_HASTARGET . '%'] = array(
+    'title' => 'Open Annotation hasTarget Query',
+    'page callback' => 'cwrc_entities_oa_hasTarget',
+    'page arguments' => array(4),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/callbacks_oa.inc',
+    'access arguments' => array(CWRC_OPEN_ANNOTATION_VIEW),
+  );
+
+  $items[CWRC_OPEN_ANNOTATION_API] = array(
+    'title' => 'Open Annotation REST endpoint',
+    'page callback' => 'cwrc_entities_oa_annotation',
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/callbacks_oa.inc',
+    'access arguments' => array(CWRC_OPEN_ANNOTATION_CREATE),
+  );
+  $items[CWRC_OPEN_ANNOTATION_API . '%'] = array(
+    'title' => 'Open Annotation REST endpoint',
+    'page callback' => 'cwrc_entities_oa_annotation',
+    'page arguments' => array(4),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/callbacks_oa.inc',
+    'access arguments' => array(CWRC_OPEN_ANNOTATION_CREATE),
+  );
+
+
+  return $items;
+}
+
+
+/**
+ * Implements hook_permission().
+ */
+function cwrc_entities_permission() {
+  return array(
+    CWRC_OPEN_ANNOTATION_VIEW => array(
+      'title' => t('View open annotations'),
+      'description' => t('View open annotations.'),
+    ),
+    CWRC_OPEN_ANNOTATION_CREATE => array(
+      'title' => t('Create open annotations'),
+      'description' => t('Create open Annotations'),
+    ),
+    _CWRC_ENTITY_VIEW => array(
+      'title' => t('View entity'),
+      'description' => t('View entity'),
+    ),
+    CWRC_ENTITY_CREATE => array(
+      'title' => t('Create entity'),
+      'description' => t('Create entity'),
+    ),
+  );
+}
+
+
+
