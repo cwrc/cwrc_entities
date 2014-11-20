@@ -15,21 +15,22 @@ define('CWRC_ENTITY_VIEW', 'view entity');
 define('CWRC_ENTITY_CREATE', 'create entity');
 
 
-define('CWRC_OPEN_ANNOTATION_API_BASE', 'islandora/markupeditor/oa/');
+define('CWRC_OPEN_ANNOTATION_API_BASE', 'islandora/cwrc_entities/oa/');
 define('CWRC_OPEN_ANNOTATION_API_HASTARGET', CWRC_OPEN_ANNOTATION_API_BASE . 'hasTarget/');
 define('CWRC_OPEN_ANNOTATION_API_MINTURI', CWRC_OPEN_ANNOTATION_API_BASE . 'mintURI');
 define('CWRC_OPEN_ANNOTATION_API', CWRC_OPEN_ANNOTATION_API_BASE . 'annotation');
 
 
-define('CWRC_ENTITES_API', 'services/ccm-api');
+//define('CWRC_ENTITES_API', 'services/ccm-api');
+define('CWRC_ENTITES_API', 'islandora/cwrc_entities');
 define('CWRC_ENTITES_API_PLACE', CWRC_ENTITES_API . '/place');
-define('CWRC_ENTITES_API_PLACE_SEARCH', CWRC_ENTITES_API_PLACE . '/search');
+define('CWRC_ENTITES_API_PLACE_SEARCH', CWRC_ENTITES_API . '/search/place');
 define('CWRC_ENTITES_API_PERSON', CWRC_ENTITES_API . '/person');
-define('CWRC_ENTITES_API_PERSON_SEARCH', CWRC_ENTITES_API_PERSON. '/search');
+define('CWRC_ENTITES_API_PERSON_SEARCH', CWRC_ENTITES_API. '/search/person');
 define('CWRC_ENTITES_API_ORGANIZATION', CWRC_ENTITES_API . '/organization');
-define('CWRC_ENTITES_API_ORGANIZATION_SEARCH', CWRC_ENTITES_API_ORGANIZATION . '/search');
+define('CWRC_ENTITES_API_ORGANIZATION_SEARCH', CWRC_ENTITES_API . '/search/organization');
 define('CWRC_ENTITES_API_TITLE', CWRC_ENTITES_API . '/title');
-define('CWRC_ENTITES_API_TITLE_SEARCH', CWRC_ENTITES_API_TITLE. '/search');
+define('CWRC_ENTITES_API_TITLE_SEARCH', CWRC_ENTITES_API_TITLE. '/search/title');
 
 
 define('CWRC_ENTITES_PERSON_DS_ID', 'PERSON');
@@ -45,9 +46,8 @@ function cwrc_entities_menu() {
 
   // ===== ENTITIES
   // search
-  //$items[ISLANDORA_CWRC_ENTITES_API_PERSON_SEARCH] = array(
-  //
-  $items['islandora/cwrc_entities/search/person'] = array(
+  //$items['islandora/cwrc_entities/search/person'] = array(
+  $items[ISLANDORA_CWRC_ENTITES_API_PERSON_SEARCH] = array(
     'title' => 'Person Entity Search',
     'page callback' => 'cwrc_entities_search',
     'page arguments' => array(
