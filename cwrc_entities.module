@@ -170,7 +170,7 @@ function cwrc_entities_permission() {
       'title' => t('Create open annotations'),
       'description' => t('Create open Annotations'),
     ),
-    _CWRC_ENTITY_VIEW => array(
+    CWRC_ENTITY_VIEW => array(
       'title' => t('View entity'),
       'description' => t('View entity'),
     ),
