@@ -73,7 +73,7 @@ function cwrc_entities_menu() {
     'page callback' => 'cwrc_entities_rest_api',
     'page arguments' => array(
       NULL
-      , 'info:fedora/cwrc:person-entityCModel'
+      , cwrc:person-entityCModel'
       , 'cwrc:d3c004f1-2b3f-4e51-a679-4f1c0da4fe17'
       , array(
           WorkflowConst::STAMP => 'cwrc:cre'
