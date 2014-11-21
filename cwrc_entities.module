@@ -47,7 +47,7 @@ function cwrc_entities_menu() {
   // ===== ENTITIES
   // search
   //$items['islandora/cwrc_entities/search/person'] = array(
-  $items[ISLANDORA_CWRC_ENTITES_API_PERSON_SEARCH] = array(
+  $items[CWRC_ENTITES_API_PERSON_SEARCH] = array(
     'title' => 'Person Entity Search',
     'page callback' => 'cwrc_entities_search',
     'page arguments' => array(
@@ -64,7 +64,8 @@ function cwrc_entities_menu() {
 
   // PERSON Entity
   //$items[ISLANDORA_CWRC_ENTITES_API_PERSON] = array(
-  $items['islandora/cwrc_entities/entity/person'] = array(
+  //$items['islandora/cwrc_entities/entity/person'] = array(
+  $items[CWRC_ENTITES_API_PERSON] = array(
     'title' => 'Person Entity REST Creation',
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_entities.inc',
@@ -86,14 +87,15 @@ function cwrc_entities_menu() {
   );
 
  //$items[ISLANDORA_CWRC_ENTITES_API_PERSON . '%'] = array(
-  $items['islandora/cwrc_entities/entity/person/%'] = array(
+//  $items['islandora/cwrc_entities/entity/person/%'] = array(
+  $items[CWRC_ENTITES_API_PERSON . '/%'] = array(
     'title' => 'Person Entity REST endpoint',
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_entities.inc',
     'access arguments' => array(CWRC_ENTITY_CREATE),
     'page callback' => 'cwrc_entities_rest_api',
     'page arguments' => array(
-      4
+      3
       , NULL
       , NULL
       , array(
