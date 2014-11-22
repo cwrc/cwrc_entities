@@ -98,8 +98,11 @@ function cwrc_entities_rest_api(
     }
   }
   catch (Exception $e) {
-    drupal_add_http_header('Status', $e->getCode());
-    $response = array('message' => $e->getMessage());
+    //drupal_add_http_header('statusText', $e->getMessage());
+    drupal_add_http_header('responseText', $e->getMessage());
+    //drupal_add_http_header('Content-Type', 'application/json; utf-8');
+    $response =  drupal_json_encode(array('message' => $e->getMessage()));
+    drupal_add_http_header('Status', '500');
   }
   $encode = is_array($response) || is_object($response);
   if ($encode) {
@@ -156,38 +159,49 @@ function cwrc_entities_get_response(array $parameters) {
  */
 function cwrc_entities_put_response(array $parameters) {
 
-  $fedora_object = $parameters['resource'];
-  $ds_id = $parameters['dataStreamID'];
-  $activity_params = $parameters['activity'];
-  $entityToDCXSLT = $parameters['entityToDCXSLT'];
+  try {
+    $fedora_object = $parameters['resource'];
+    $ds_id = $parameters['dataStreamID'];
+    $activity_params = $parameters['activity'];
+    $entityToDCXSLT = $parameters['entityToDCXSLT'];
 
-  $request = $parameters['request'];
-  $content_blob = $request[CWRC_ENTITES_REQUEST_CONTENT_PARAM];
+    $request = $parameters['request'];
+    $content_blob = $request[CWRC_ENTITES_REQUEST_CONTENT_PARAM];
 
-  if (!isset($fedora_object) or !isset($fedora_object[$ds_id])) {
-    drupal_add_http_header('Status', 404);
-  }
-  else {
-
-    // update content datastream
-    $fedora_object[$ds_id]->setContentFromString($content_blob);
-
-    // add a workflow record 
-    if (isset($activity_params)) {
-      islandora_markup_entity_add_workflow($fedora_object, $activity_params);
+    if (!isset($fedora_object) or !isset($fedora_object[$ds_id])) {
+      drupal_add_http_header('Status', 404);
     }
+    else {
 
-    // update the DC datastream and the associated Fedora Object label
-    if (isset($entityToDCXSLT)) {
-      $dc = islandora_markup_entity_build_DC($fedora_object, $entityToDCXSLT, $content_blob);
-      islandora_markup_entity_update_DC($fedora_object, $dc);
-      $title  = islandora_markup_entity_get_title_from_DC($dc);
-      $fedora_object->label = $title;
+throw new Exception("Unable to modify object {$fedora_object->id}", 510); 
+
+      // update content datastream
+      $fedora_object[$ds_id]->setContentFromString($content_blob);
+
+      // add a workflow record 
+      if (isset($activity_params)) {
+        islandora_markup_entity_add_workflow($fedora_object, $activity_params);
+      }
+
+      // update the DC datastream and the associated Fedora Object label
+      if (isset($entityToDCXSLT)) {
+        $dc = islandora_markup_entity_build_DC($fedora_object, $entityToDCXSLT, $content_blob);
+        islandora_markup_entity_update_DC($fedora_object, $dc);
+        $title  = islandora_markup_entity_get_title_from_DC($dc);
+        $fedora_object->label = $title;
+      }
     }
   }
+  catch (Exception $e)
+  {
+    throw new Exception($e->getMessage(), $e->getCode()); //drupal_add_http_header('Status', 500);
+    //return drupal_json_output( array('error' => $e->getMessage() ) );
+    //return  array('error' => $e->getMessage()) ;
+  }
 
+  return drupal_json_output( array('pid' => $fedora_object->id) );
   //return islandora_markup_editor_entities_get_response(array('resource' => $fedora_object));
-  return drupal_json_output($content_blob);
+  //return drupal_json_output($content_blob);
       //return drupal_json_output(print_r($fedora_object));
   //return drupal_json_output(print_r($activity_params)); 
   //return drupal_json_output("");
@@ -307,10 +321,10 @@ function cwrc_entities_post_response(array $parameters) {
   drupal_add_http_header('Status', 201);
   //return drupal_json_output($parameters);
 
-  return drupal_json_output($fedora_object->id);
+  return drupal_json_output( array('pid' => $fedora_object->id) );
 
   // Mock the Get Response.
-  return cwrc_entities_get_response(array('resource' => $fedora_object));
+  //return cwrc_entities_get_response(array('resource' => $fedora_object));
 }
 
 
