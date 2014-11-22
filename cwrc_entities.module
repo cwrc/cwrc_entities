@@ -36,7 +36,7 @@ define('CWRC_ENTITES_API_TITLE_SEARCH', CWRC_ENTITES_API . '/search/title');
 define('CWRC_ENTITES_PERSON_DS_ID', 'PERSON');
 define('CWRC_ENTITES_ORGANIZATION_DS_ID', 'ORGANIZATION');
 define('CWRC_ENTITES_PLACE_DS_ID', 'PLACE');
-define('CWRC_ENTITES_TITLE_DS_ID', 'TITLE');
+define('CWRC_ENTITES_TITLE_DS_ID', 'MODS');
 
 define('CWRC_ENTITES_REQUEST_CONTENT_PARAM', 'data');
 
@@ -47,6 +47,8 @@ define('CWRC_ENTITES_REQUEST_CONTENT_PARAM', 'data');
  */
 function cwrc_entities_menu() {
 
+  module_load_include('inc', 'islandora_workflow_rest', 'includes/basic_enum'); 
+
   $config = array(
     'person' => array(
         'search' => array(
@@ -54,13 +56,13 @@ function cwrc_entities_menu() {
             , 'title' => 'Person Entity Search'
             , 'cModel' => 'info:fedora/cwrc:person-entityCModel'
             , 'fields' => array('cwrc_entity_person_preferredForm_et','cwrc_entity_person_variantForm_et')
-          )
+        )
         , 
         'entity' => array(
             'route' => CWRC_ENTITES_API_PERSON 
             , 'title' => 'Person Entity REST API'
-            , 'cModel' => 'info:fedora/cwrc:person-entityCModel'
-            , 'fedoraCollection' => 'cwrc:d3c004f1-2b3f-4e51-a679-4f1c0da4fe17'
+            , 'cModel' => 'cwrc:person-entityCModel'
+            , 'collectionPID' => 'cwrc:d3c004f1-2b3f-4e51-a679-4f1c0da4fe17'
             , 'ds_id' => CWRC_ENTITES_PERSON_DS_ID 
           )
       ),
@@ -70,6 +72,14 @@ function cwrc_entities_menu() {
             , 'title' => 'Organization Entity Search'
             , 'cModel' => 'info:fedora/cwrc:organization-entityCModel'
             , 'fields' => array('cwrc_entity_org_preferredForm_et','cwrc_entity_org_variantForm_et')
+        )
+        ,
+        'entity' => array(
+            'route' => CWRC_ENTITES_API_ORGANIZATION 
+            , 'title' => 'Organization Entity REST API'
+            , 'cModel' => 'cwrc:organization-entityCModel'
+            , 'collectionPID' => 'cwrc:65c257ec-446c-479c-8695-6c015788413b'
+            , 'ds_id' => CWRC_ENTITES_ORGANIZATION_DS_ID 
           )
       ),
     'place' => array(
@@ -78,6 +88,14 @@ function cwrc_entities_menu() {
             , 'title' => 'Place Entity Search'
             , 'cModel' => 'info:fedora/cwrc:place-entityCModel'
             , 'fields' => array('cwrc_entity_place_preferredForm_et','cwrc_entity_place_variantForm_et')
+        )
+        ,
+        'entity' => array(
+            'route' => CWRC_ENTITES_API_PLACE 
+            , 'title' => 'Place Entity REST API'
+            , 'cModel' => 'cwrc:place-entityCModel'
+            , 'collectionPID' => 'cwrc:20d46869-20a0-4d19-9ef6-1aacb3a1fba8'
+            , 'ds_id' => CWRC_ENTITES_PLACE_DS_ID 
           )
       ),
     'title' => array(
@@ -86,15 +104,23 @@ function cwrc_entities_menu() {
             , 'title' => 'Title Entity Search'
             , 'cModel' => 'info:fedora/cwrc:title-entityCModel'
             , 'fields' => array('cwrc_entity_title_uniformTitle_et','cwrc_entity_title_variantTitle_et')
+        )
+        ,
+        'entity' => array(
+            'route' => CWRC_ENTITES_API_TITLE 
+            , 'title' => 'Title Entity REST API'
+            , 'cModel' => 'cwrc:title-entityCModel'
+            , 'collectionPID' => 'cwrc:bc53ab0d-3138-4791-a32a-5579fd067552'
+            , 'ds_id' => CWRC_ENTITES_TITLE_DS_ID 
           )
-      ),
-  
-
+      )
   );
 
 
   foreach ($config as $key => $value)
   {
+
+    // search
     $items[ $value['search']['route'] ] = array(
       'title' => $value['search']['title']
       , 'page callback' => 'cwrc_entities_search'
@@ -105,6 +131,49 @@ function cwrc_entities_menu() {
       , 'type' => MENU_CALLBACK
       , 'file' => 'includes/callbacks_entities.inc'
       , 'access arguments' => array(CWRC_ENTITY_VIEW)
+    );
+
+    // Entity create
+    $items[ $value['entity']['route'] ] = array(
+      'title' => $value['entity']['title'],
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/callbacks_entities.inc',
+      'access arguments' => array(CWRC_ENTITY_CREATE),
+      'page callback' => 'cwrc_entities_rest_api',
+      'page arguments' => array(
+        NULL
+        , $value['entity']['cModel']
+        , $value['entity']['collectionPID']
+        , array(
+            WorkflowConst::STAMP => 'cwrc:cre'
+            , WorkflowConst::CATEGORY => 'created'
+            , WorkflowConst::STATUS => 'c'
+          )
+        , '/xslt/entity_to_dc.xsl'
+        , $value['entity']['ds_id']
+        ),
+      'type' => MENU_CALLBACK,
+    );
+
+    // Entity retrieve update view
+    $items[ $value['entity']['route'] . '/%'] = array(
+      'title' => $value['entity']['title'],
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/callbacks_entities.inc',
+      'access arguments' => array(CWRC_ENTITY_CREATE),
+      'page callback' => 'cwrc_entities_rest_api',
+      'page arguments' => array(
+        3
+        , NULL
+        , NULL
+        , array(
+            WorkflowConst::STAMP => 'cwrc:evr'
+            , WorkflowConst::CATEGORY => 'content_contribution'
+            , WorkflowConst::STATUS => 'c'
+          )
+        , '/xslt/entity_to_dc.xsl'
+        , $value['entity']['ds_id']
+        ),
     );
 
 
@@ -131,8 +200,7 @@ function cwrc_entities_menu() {
 */
 
 
-  module_load_include('inc', 'islandora_workflow_rest', 'includes/basic_enum'); 
-
+/*
   // PERSON Entity
   //$items[ISLANDORA_CWRC_ENTITES_API_PERSON] = array(
   //$items['islandora/cwrc_entities/entity/person'] = array(
@@ -178,6 +246,7 @@ function cwrc_entities_menu() {
       , CWRC_ENTITES_PERSON_DS_ID
       ),
   );
+*/
 
 
     // OA Annotatation API

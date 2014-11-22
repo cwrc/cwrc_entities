@@ -173,7 +173,7 @@ function cwrc_entities_put_response(array $parameters) {
     }
     else {
 
-throw new Exception("Unable to modify object {$fedora_object->id}", 510); 
+//throw new Exception("Unable to modify object {$fedora_object->id}", 510); 
 
       // update content datastream
       $fedora_object[$ds_id]->setContentFromString($content_blob);

@@ -45,7 +45,7 @@
   * select the appropriate DC title template
   -->
   <xsl:template name="GET_DC_TITLE">
-   <xsl:apply-templates select="person | organization | mods:titleInfo" mode="entity_dc_title" />
+   <xsl:apply-templates select="person | organization |  place | mods:titleInfo" mode="entity_dc_title" />
   </xsl:template>
 
 
@@ -106,6 +106,28 @@
       </xsl:otherwise >
     </xsl:choose>
   </xsl:template>
+  
+  <!--
+  * build the DC title - place entity
+  * Note: all place entities appear to use the <namePart> element for the organization name, with no place entities using the <displayLabel> element
+  -->
+ <xsl:template  match="place" mode="entity_dc_title">
+
+    <xsl:choose>
+      <!-- displayLabel -->
+      <xsl:when test="identity/displayLabel">
+        <xsl:value-of select="identity/displayLabel" />
+      </xsl:when>
+      <!-- namePart -->
+      <xsl:when test="identity/preferredForm/namePart">
+          <xsl:value-of select="identity/preferredForm/namePart" />
+      </xsl:when>
+      <xsl:otherwise> 
+        <xsl:text>zzzz ERROR unknown label</xsl:text>
+      </xsl:otherwise >
+    </xsl:choose>
+  </xsl:template>
+
 
 
   <!--
