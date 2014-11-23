@@ -272,6 +272,8 @@ function cwrc_entities_oa_annotation($uri = NULL) {
   }
   catch (Exception $e) {
     drupal_add_http_header('Status', $e->getCode());
+    drupal_add_http_header('responseText', $e->getMessage());
+    //$response = array('error' => $e->getMessage());
     $response = array('message' => $e->getMessage());
   }
   $encode = is_array($response) || is_object($response);

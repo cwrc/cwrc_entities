@@ -22,7 +22,7 @@ define('CWRC_OPEN_ANNOTATION_API', CWRC_OPEN_ANNOTATION_API_BASE . 'annotation')
 
 
 //define('CWRC_ENTITES_API', 'services/ccm-api');
-define('CWRC_ENTITES_API', 'islandora/cwrc_entities');
+define('CWRC_ENTITES_API', 'islandora/cwrc_entities/v1');
 define('CWRC_ENTITES_API_PLACE', CWRC_ENTITES_API . '/place');
 define('CWRC_ENTITES_API_PLACE_SEARCH', CWRC_ENTITES_API . '/search/place');
 define('CWRC_ENTITES_API_PERSON', CWRC_ENTITES_API . '/person');
@@ -163,7 +163,7 @@ function cwrc_entities_menu() {
       'access arguments' => array(CWRC_ENTITY_VIEW),
       'page callback' => 'cwrc_entities_rest_api',
       'page arguments' => array(
-        3
+        4
         , NULL
         , NULL
         , array(
