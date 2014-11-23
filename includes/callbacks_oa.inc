@@ -282,7 +282,9 @@ function cwrc_entities_oa_annotation($uri = NULL) {
     drupal_add_http_header('Content-Type', 'application/json; utf-8');
     return drupal_json_encode($response);
   }
-  return $response;
+  print $response;
+  exit();
+  //return $response;
 }
 
 

@@ -102,7 +102,7 @@ function cwrc_entities_rest_api(
     drupal_add_http_header('responseText', $e->getMessage());
     //drupal_add_http_header('Content-Type', 'application/json; utf-8');
     $response =  drupal_json_encode(array('message' => $e->getMessage()));
-    drupal_add_http_header('Status', '500');
+    //drupal_add_http_header('Status', '500');
   }
   $encode = is_array($response) || is_object($response);
   if ($encode) {
@@ -112,7 +112,10 @@ function cwrc_entities_rest_api(
     drupal_add_http_header('Content-Type', 'application/json; utf-8');
     return drupal_json_encode($response);
   }
-  return $response;
+  drupal_add_http_header('Content-Type', 'application/json; utf-8');
+  print $response;
+  exit();
+  //return $response;
 }
 
 

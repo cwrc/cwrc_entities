@@ -138,7 +138,7 @@ function cwrc_entities_menu() {
       'title' => $value['entity']['title'],
       'type' => MENU_CALLBACK,
       'file' => 'includes/callbacks_entities.inc',
-      'access arguments' => array(CWRC_ENTITY_CREATE),
+      'access arguments' => array(CWRC_ENTITY_VIEW),
       'page callback' => 'cwrc_entities_rest_api',
       'page arguments' => array(
         NULL
@@ -160,7 +160,7 @@ function cwrc_entities_menu() {
       'title' => $value['entity']['title'],
       'type' => MENU_CALLBACK,
       'file' => 'includes/callbacks_entities.inc',
-      'access arguments' => array(CWRC_ENTITY_CREATE),
+      'access arguments' => array(CWRC_ENTITY_VIEW),
       'page callback' => 'cwrc_entities_rest_api',
       'page arguments' => array(
         3
@@ -208,7 +208,7 @@ function cwrc_entities_menu() {
     'title' => 'Person Entity REST Creation',
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_entities.inc',
-    'access arguments' => array(CWRC_ENTITY_CREATE),
+    'access arguments' => array(CWRC_ENTITY_VIEW),
     'page callback' => 'cwrc_entities_rest_api',
     'page arguments' => array(
       NULL
@@ -231,7 +231,7 @@ function cwrc_entities_menu() {
     'title' => 'Person Entity REST endpoint',
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_entities.inc',
-    'access arguments' => array(CWRC_ENTITY_CREATE),
+    'access arguments' => array(CWRC_ENTITY_VIEW),
     'page callback' => 'cwrc_entities_rest_api',
     'page arguments' => array(
       3
