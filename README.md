@@ -198,6 +198,9 @@ Returns the same response as a [GET Annotation](#response-200-ok) request.
 
 ## Search
 
+#### URL syntax
+islandora/cwrc_entities/v1/search/{type}?
+
 #### HTTP Method
 GET
 
@@ -220,7 +223,7 @@ Returns a JSON formated Solr result
 ## Create A New Entity 
 
 #### URL syntax
-islandora/cwrc_entities/entity/{type}/{PID}
+islandora/cwrc_entities/v1/{type}/{PID}
 
 #### HTTP Method
 POST
@@ -241,7 +244,7 @@ Returns the same response as a [GET Annotation](#response-200-ok) request.
 ## Update An Existing Entity 
 
 #### URL syntax
-islandora/cwrc_entities/entity/{type}/{PID}
+islandora/cwrc_entities/v1/{type}/{PID}
 
 
 #### HTTP Method
@@ -263,7 +266,7 @@ Returns the same response as a [GET Annotation](#response-200-ok) request.
 ## Get An Existing Annotation
 
 #### URL syntax
-islandora/cwrc_entities/entity/{type}/{URI}
+islandora/cwrc_entities/v1/{type}/{URI}
 
 #### HTTP Method
 GET
@@ -284,7 +287,7 @@ Returns the same response as a [GET Annotation](#response-200-ok) request.
 ## Delete An Existing Entity 
 
 #### URL syntax
-islandora/cwrc_entities/entity/{type}/{URI}
+islandora/cwrc_entities/v1/{type}/{URI}
 
 #### HTTP Method
 DELETE
