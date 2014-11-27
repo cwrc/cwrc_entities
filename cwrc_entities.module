@@ -49,6 +49,7 @@ function cwrc_entities_menu() {
 
   module_load_include('inc', 'islandora_workflow_rest', 'includes/basic_enum'); 
 
+  // TODO: add infor to configuration page
   $config = array(
     'person' => array(
         'search' => array(
