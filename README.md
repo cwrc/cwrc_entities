@@ -7,6 +7,10 @@ CWRC Entity Handler
 
 ## Requirements
 
+https://github.com/cwrc/basic-solr-config/blob/cwrc-entities/islandora_transforms/CWRC_Entities_to_solr.xslt
+
+islandora_workflow
+
 ## Installation
 
 ## Troubleshooting/Issues
