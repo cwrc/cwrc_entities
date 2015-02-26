@@ -76,7 +76,12 @@
       </xsl:when>
       <!-- namePart -->
       <xsl:when test="identity/preferredForm/namePart">
-          <xsl:value-of select="identity/preferredForm/namePart" />
+        <xsl:for-each select="identity/preferredForm/namePart">
+          <xsl:value-of select="." /> 
+          <xsl:if test="position()!=last()">
+            <xsl:text> </xsl:text>
+          </xsl:if>
+        </xsl:for-each>  
       </xsl:when>
       <xsl:otherwise> 
         <xsl:text>zzzz ERROR unknown label</xsl:text>
