@@ -70,23 +70,18 @@
       <!-- family and given -->
       <xsl:when test="$is_forename_present or $is_surname_present">
         <xsl:if test="$is_forename_present">
-          <xsl:value-of select="normalize-space(identity/preferredForm/namePart[@partType='given']/text())" />
+          <xsl:apply-templates select="identity/preferredForm/namePart[@partType='given']" mode="entity_dc_title" />
         </xsl:if>
         <xsl:if test="$is_forename_present and $is_surname_present">
           <xsl:text> </xsl:text>
         </xsl:if>
         <xsl:if test="$is_surname_present">
-          <xsl:value-of select="normalize-space(identity/preferredForm/namePart[@partType='family']/text())" />
+          <xsl:apply-templates select="identity/preferredForm/namePart[@partType='family']" mode="entity_dc_title" />
         </xsl:if>
       </xsl:when>
       <!-- namePart -->
       <xsl:when test="identity/preferredForm/namePart">
-        <xsl:for-each select="identity/preferredForm/namePart">
-          <xsl:value-of select="normalize-space(./text())" /> 
-          <xsl:if test="position()!=last()">
-            <xsl:text> </xsl:text>
-          </xsl:if>
-        </xsl:for-each>  
+          <xsl:apply-templates select="identity/preferredForm/namePart" mode="entity_dc_title" />
       </xsl:when>
       <xsl:otherwise> 
         <xsl:text>zzzz ERROR unknown label</xsl:text>
@@ -94,6 +89,12 @@
     </xsl:choose>
   </xsl:template>
 
+  <xsl:template match="namePart" mode="entity_dc_title">
+          <xsl:value-of select="normalize-space(./text())" /> 
+          <xsl:if test="position()!=last()">
+            <xsl:text> </xsl:text>
+          </xsl:if>
+  </xsl:template>
 
   <!--
   * build the DC title - organization entity
