@@ -57,27 +57,32 @@
   -->
   <xsl:template match="person" mode="entity_dc_title">
 
+    <!-- does a surname exist -->
+    <xsl:variable name="is_surname_present" select="identity/preferredForm/namePart/@partType='family'" />
+    <!-- does a forename exist -->
+    <xsl:variable name="is_forename_present" select="identity/preferredForm/namePart/@partType='given'" />
+                          
     <xsl:choose>
       <!-- displayLabel -->
       <xsl:when test="identity/displayLabel">
         <xsl:value-of select="identity/displayLabel" />
       </xsl:when>
       <!-- family and given -->
-      <xsl:when test="identity/preferredForm/namePart[@partType='family'] or identity/preferredForm/namePart[@partType='given']">
-        <xsl:if test="identity/preferredForm/namePart[@partType='given']">
-          <xsl:value-of select="identity/preferredForm/namePart[@partType='given']" />
+      <xsl:when test="$is_forename_present or $is_surname_present">
+        <xsl:if test="$is_forename_present">
+          <xsl:value-of select="normalize-space(identity/preferredForm/namePart[@partType='given']/text())" />
         </xsl:if>
-        <xsl:if test="identity/preferredForm[namePart[@partType='family']] and identity/preferredForm[namePart[@partType='given']]">
+        <xsl:if test="$is_forename_present and $is_surname_present">
           <xsl:text> </xsl:text>
         </xsl:if>
-        <xsl:if test="identity/preferredForm/namePart[@partType='family']">
-          <xsl:value-of select="identity/preferredForm/namePart[@partType='family']" />
+        <xsl:if test="$is_surname_present">
+          <xsl:value-of select="normalize-space(identity/preferredForm/namePart[@partType='family']/text())" />
         </xsl:if>
       </xsl:when>
       <!-- namePart -->
       <xsl:when test="identity/preferredForm/namePart">
         <xsl:for-each select="identity/preferredForm/namePart">
-          <xsl:value-of select="." /> 
+          <xsl:value-of select="normalize-space(./text())" /> 
           <xsl:if test="position()!=last()">
             <xsl:text> </xsl:text>
           </xsl:if>
