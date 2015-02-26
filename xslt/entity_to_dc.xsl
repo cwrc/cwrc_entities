@@ -63,15 +63,15 @@
         <xsl:value-of select="identity/displayLabel" />
       </xsl:when>
       <!-- family and given -->
-      <xsl:when test="identity/preferredForm/namePart/@family or identity/preferredForm/namePart/@given">
-        <xsl:if test="identity/preferredForm/namePart/@family">
-          <xsl:value-of select="identity/preferredForm/namePart[partType='family']" />
+      <xsl:when test="identity/preferredForm/namePart[@partType='family'] or identity/preferredForm/namePart[@partType='given']">
+        <xsl:if test="identity/preferredForm/namePart[@partType='family']">
+          <xsl:value-of select="identity/preferredForm/namePart[@partType='family']" />
         </xsl:if>
-        <xsl:if test="identity/preferredForm/namePart/@family and identity/preferredForm/namePart/@given">
+        <xsl:if test="identity/preferredForm[namePart[@partType='family']] and identity/preferredForm[namePart[@partType='given']]">
           <xsl:text> </xsl:text>
         </xsl:if>
-        <xsl:if test="identity/preferredForm/namePart/@given">
-          <xsl:value-of select="identity/preferredForm/namePart[type='given']" />
+        <xsl:if test="identity/preferredForm/namePart[@partType='given']">
+          <xsl:value-of select="identity/preferredForm/namePart[@partType='given']" />
         </xsl:if>
       </xsl:when>
       <!-- namePart -->
