@@ -110,7 +110,7 @@
       </xsl:when>
       <!-- namePart -->
       <xsl:when test="identity/preferredForm/namePart">
-          <xsl:value-of select="identity/preferredForm/namePart" />
+        <xsl:apply-templates select="identity/preferredForm/namePart" mode="entity_dc_title" />        
       </xsl:when>
       <xsl:otherwise> 
         <xsl:text>zzzz ERROR unknown label</xsl:text>
@@ -131,7 +131,7 @@
       </xsl:when>
       <!-- namePart -->
       <xsl:when test="identity/preferredForm/namePart">
-          <xsl:value-of select="identity/preferredForm/namePart" />
+        <xsl:apply-templates select="identity/preferredForm/namePart" mode="entity_dc_title" />        
       </xsl:when>
       <xsl:otherwise> 
         <xsl:text>zzzz ERROR unknown label</xsl:text>
