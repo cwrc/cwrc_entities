@@ -103,14 +103,14 @@ function cwrc_entities_menu() {
         'search' => array(
             'route' => CWRC_ENTITES_API_TITLE_SEARCH
             , 'title' => 'Title Entity Search'
-            , 'cModel' => 'info:fedora/cwrc:title-entityCModel'
+            , 'cModel' => 'info:fedora/cwrc:citationCModel'
             , 'fields' => array('cwrc_entity_title_uniformTitle_et','cwrc_entity_title_variantTitle_et')
         )
         ,
         'entity' => array(
             'route' => CWRC_ENTITES_API_TITLE 
             , 'title' => 'Title Entity REST API'
-            , 'cModel' => 'cwrc:title-entityCModel'
+            , 'cModel' => 'info:fedora/cwrc:citationCModel'
             , 'collectionPID' => 'cwrc:bc53ab0d-3138-4791-a32a-5579fd067552'
             , 'ds_id' => CWRC_ENTITES_TITLE_DS_ID 
           )
