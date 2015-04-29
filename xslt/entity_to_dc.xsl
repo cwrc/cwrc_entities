@@ -64,7 +64,7 @@
                           
     <xsl:choose>
       <!-- displayLabel -->
-      <xsl:when test="identity/displayLabel">
+        <xsl:when test="identity/displayLabel and identity/displayLabel/text() != ''">
         <xsl:value-of select="identity/displayLabel" />
       </xsl:when>
       <!-- family and given -->
@@ -105,7 +105,7 @@
 
     <xsl:choose>
       <!-- displayLabel -->
-      <xsl:when test="identity/displayLabel">
+      <xsl:when test="identity/displayLabel and identity/displayLabel/text() != ''">
         <xsl:value-of select="identity/displayLabel" />
       </xsl:when>
       <!-- namePart -->
@@ -126,7 +126,7 @@
 
     <xsl:choose>
       <!-- displayLabel -->
-      <xsl:when test="identity/displayLabel">
+        <xsl:when test="identity/displayLabel and identity/displayLabel/text() != ''">
         <xsl:value-of select="identity/displayLabel" />
       </xsl:when>
       <!-- namePart -->
