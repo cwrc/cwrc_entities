@@ -241,8 +241,10 @@ function cwrc_entities_post_response(array $parameters) {
 
   $hasTarget = ((isset($request['hasTarget'])) ? $request['hasTarget'] : NULL);
 
-  $uri = $request['uri'];
-  $pid = cwrc_entities_convert_uri_to_pid($uri);
+  if (isset($request['uri'])) {
+    $uri = $request['uri'];
+    $pid = cwrc_entities_convert_uri_to_pid($uri);
+  }
 
   if (!isset($pid) or $pid == FALSE)
   {
