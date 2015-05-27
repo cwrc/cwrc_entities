@@ -379,7 +379,7 @@ function islandora_markup_entity_build_DC($pid, $entityToDCXSLT, $content_blob)
     $xslt_proc->importStylesheet($xsl_doc);
     
     $input_doc = new DOMDocument();
-    $input_doc->loadXML($content_blob);
+    @$input_doc->loadXML($content_blob);
 
     // build the DC content
     // Convert MODS to DC.
