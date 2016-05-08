@@ -91,13 +91,167 @@ function cwrc_entities_external_lookup($refURI)
 * given the result of an external entity detail lookup 
 * parse the return and create a new entity stub
 *
-* @param $refURI
-*     URI of the external entity
+* @param $typeStruct
+*     data structure containing the details of the stub to create 
 */
-function cwrc_entities_external_create_stub($refURI)
+function cwrc_entities_external_create_stub($typeStruct)
 {
 
+  $xml = '';
+
+  switch ($typeStruct['cModel'])
+  {
+    case 'cwrc:person-entityCModel':
+      $xml = populateTemplatePerson($typeStruct);
+      break;
+    case 'cwrc:organization-entityCModel':
+      $xml = populateTemplateOrganization($typeStruct);
+      break;
+    case 'cwrc:place-entityCModel':
+      $xml = populateTemplatePlace($typeStruct);
+      break;
+    case 'cwrc:citationCModel':
+      $xml = populateTemplateCitation($typeStruct);
+      break;
+    default:
+      break;
+  }
+
+  print_r($xml);
+
+
 }
+
+
+function populateTemplatePerson($typeStruct)
+{
+  $today = date('Y-m-d');
+  $xml = <<<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<cwrc>
+    <entity>
+        <person>
+            <identity>
+                <preferredForm>
+                    <namePart>{$typeStruct['label']}</namePart>
+                </preferredForm>
+                <sameAs>{$typeStruct['refURI']}</sameAs>
+            </identity>
+            <recordInfo>
+                <originInfo>
+                    <projectId>{$typeStruct['LODSource']}</projectId>
+                    <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
+                    <recordCreationDate>{$today}</recordCreationDate>
+                    <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
+                </originInfo>
+                <entityId>{$typeStruct['refURI']}</entityId>
+                <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
+            </recordInfo>
+        </person>
+    </entity>
+</cwrc>
+EOF;
+
+  return $xml;
+}
+
+function populateTemplateOrganization($typeStruct)
+{
+  $today = date('Y-m-d');
+  $xml = <<<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<cwrc>
+    <entity>
+        <organization>
+            <identity>
+                <preferredForm>
+                    <namePart>{$typeStruct['label']}</namePart>
+                </preferredForm>
+                <sameAs>{$typeStruct['refURI']}</sameAs>
+            </identity>
+            <recordInfo>
+                <originInfo>
+                    <projectId>{$typeStruct['LODSource']}</projectId>
+                    <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
+                    <recordCreationDate>{$today}</recordCreationDate>
+                    <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
+                </originInfo>
+                <entityId>{$typeStruct['refURI']}</entityId>
+                <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
+            </recordInfo>
+        </organization>
+    </entity>
+</cwrc>
+EOF;
+  return $xml;
+}
+
+
+function populateTemplatePlace($typeStruct)
+{
+  $today = date('Y-m-d');
+  $xml = <<<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<cwrc>
+    <entity>
+        <place>
+            <identity>
+                <preferredForm>
+                    <namePart>{$typeStruct['label']}</namePart>
+                </preferredForm>
+                <sameAs>{$typeStruct['refURI']}</sameAs>
+            </identity>
+            <description>
+                <latitude>{$typeStruct['latitude']}</latitude>
+                <longitude>{$typeStruct['longitude']}</longitude>
+                <countryName>{$typeStruct['countryName']}</countryName>
+                <firstAdministrativeDivision>{$typeStruct['state/province']}</firstAdministrativeDivision>
+            </description>
+            <recordInfo>
+                <originInfo>
+                    <projectId>{$typeStruct['LODSourceReadible']}</projectId>
+                    <recordIdentifier source="{$typeStruct['LODSource']}">{$typeStruct['refID']}</recordIdentifier>
+                    <recordCreationDate>{$today}</recordCreationDate>
+                    <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
+                </originInfo>
+                <entityId>{$typeStruct['refURI']}</entityId>
+                <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
+            </recordInfo>
+        </place>
+    </entity>
+</cwrc>
+EOF;
+
+  return $xml;
+}
+
+function populateTemplateCitation($typeStruct)
+{
+  $today = date('Y-m-d');
+  $xml = <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/mods.xsd">
+    <titleInfo valueURI="{$typeStruct['refURI']}">
+        <title>{$typeStruct['label']}</title>
+    </titleInfo>
+    <identifier type="viaf">{$typeStruct['refURI']}</identifier>
+    <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
+    <recordInfo>
+        <recordContentSource>VIAF</recordContentSource>
+        <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
+        <recordCreationDate encoding="w3cdtf">$today</recordCreationDate>
+        <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
+    </recordInfo>
+</mods>
+
+EOF;
+
+  return $xml;
+}
+
 
 
 /**
@@ -126,7 +280,6 @@ class cwrc_entities_external_handler
         }
         return $tmp;
     }
-
 }
 
 
@@ -135,9 +288,11 @@ class cwrc_entities_external_handler
  */
 class cwrc_entities_viaf extends cwrc_entities_external_handler
 {
+    var $uriPrefix = 'http://viaf.org/viaf/';
+
     function is_URI($uriStr)
     {
-        if (1===preg_match('#http://viaf.org/viaf#',$uriStr))
+        if (1===preg_match("#$this->uriPrefix#",$uriStr))
             return TRUE;
         else
             return FALSE;
@@ -193,7 +348,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
                 break;
             }
         }
-        $ret['type'] = $tmp;
+        $ret['cModel'] = $tmp;
         $ret['query'] = $qry;
 
         // grab label from VIAF response
@@ -210,18 +365,23 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
             $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
         }
 
-        if ( $ret['type'] === 'cwrc:citationCModel' )
+        if ( $ret['cModel'] === 'cwrc:citationCModel' )
         {
             $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield/ns2:subfield[@code="a"]';
             $ret['author'] = self::getSingleXPathItem($xpathStr, $xpathObj);
         }
 
+        $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Virtual International Authority File (VIAF) database.';
+
+        $ret['refURI'] = $refURI;
+
+        $ret['refID'] = preg_replace("#".$this->uriPrefix."([^/]*)/?#",'${1}', $refURI);
+
+        $ret['LODSource'] = 'viaf';
+        $ret['LODSourceReadible'] = 'VIAF';
+
         return $ret;
     }
-
-
-
-
 }
 
 
@@ -251,8 +411,8 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         
         // get ID from given URI and add to a lookup API call to return XML
         $tmpPrefixLen = strlen($this->uriPrefix);
-        $tmpId = substr($refURI, $tmpPrefixLen, strlen($refURI)-$tmpPrefixLen);
-        $qry = $this->qryPrefix.$tmpId;
+        $refId = substr($refURI, $tmpPrefixLen, strlen($refURI)-$tmpPrefixLen);
+        $qry = $this->qryPrefix.$refId;
         //print_r("\nxx\n" .$tmp ."\nxx\n");
 
         $response = file_get_contents($qry);
@@ -262,7 +422,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
 
         $xpathObj = new Domxpath($domObj);
 
-        $ret['type'] = 'cwrc:place-entityCModel';
+        $ret['cModel'] = 'cwrc:place-entityCModel';
         $ret['query'] = $qry;
 
         // grab label from GeoNames response
@@ -284,6 +444,16 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         // grab longitude from GeoNames response
         $xpathStr = '/geoname/adminName1[1]/text()';
         $ret['state/province'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+
+
+        $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Geonames database.';
+
+        $ret['refURI'] = $refURI;
+
+        $ret['refID'] = $refID;
+
+        $ret['LODSource'] = 'geonameid';
+        $ret['LODSourceReadible'] = 'GeoNames';
 
         return $ret;
     }
@@ -318,6 +488,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
         $qry = $this->qryPrefix.$addressStr;
         //print_r("\n\n" .$tmp ."\n");
 
+        //ToDo: try/catch if server down or mistaken uri
         $response = file_get_contents($qry);
         
         $domObj = new DOMDocument();
@@ -326,7 +497,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
         $xpathObj = new Domxpath($domObj);
         //$xpathObj->registerNamespace('ns2',"http://viaf.org/viaf/terms#");
 
-        $ret['type'] = 'cwrc:place-entityCModel';
+        $ret['cModel'] = 'cwrc:place-entityCModel';
         $ret['query'] = $qry; 
 
         // grab label from response
@@ -348,6 +519,15 @@ class cwrc_entities_google extends cwrc_entities_external_handler
         // grab longitude from response
         $xpathStr = '/GeocodeResponse/result[1]/address_component/long_name[following-sibling::type/text()="administrative_area_level_1"]';
         $ret['state/province'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+
+        $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Google Maps database.';
+
+        $ret['refURI'] = $refURI;
+
+        $ret['refID'] = $addressStr;
+
+        $ret['LODSource'] = 'googlemaps';
+        $ret['LODSourceReadible'] = 'Google Maps';
 
         return $ret;
     }
