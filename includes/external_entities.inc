@@ -30,7 +30,6 @@ function cwrc_entities_traverse_xml($xmlStr) {
   // stub already exists queries
   $queryResult = $xpathObj->query('(//@ref | //@REF)');
   foreach($queryResult as $result){
-      echo $result->textContent;
       if (!cwrc_entities_external_exists($result->textContent))
         {
           $tmp = cwrc_entities_external_lookup($result->textContent);
@@ -48,7 +47,29 @@ function cwrc_entities_traverse_xml($xmlStr) {
 */
 function cwrc_entities_external_exists($refURI)
 {
-  return false;
+    // using a chain of responsibility pattern to determine
+    // which external datasource handler can work with the
+    // given URI
+    // ToDo: create this dynamically to make easier to add other 
+    // external linked data sources
+    $viafHandler = new cwrc_entities_viaf();
+    $geoNamesHandler = new cwrc_entities_geonames();
+    $googleHandler = new cwrc_entities_google();
+
+    $externalEntityHandlers 
+        = array($viafHandler, $geoNamesHandler, $googleHandler);
+
+    $ret = false;;
+    foreach ($externalEntityHandlers as $handler)
+    {
+        $tmp = $handler->is_URI($refURI);
+        if ($tmp)
+        {
+            $ret = stub_exists($refURI, $handler->LODSourceReadible);
+            break;
+        }
+    }
+    return $ret;
 }
 
 
@@ -118,8 +139,17 @@ function cwrc_entities_external_create_stub($typeStruct)
   }
 
   print_r($xml);
+}
 
 
+/**
+ * given a reference URI and LOD Source, determine is a stub entity
+ * exists
+ */
+function stub_exists($refURI, $LODSource)
+{
+  $ret = false;
+  return $ret;
 }
 
 
@@ -289,6 +319,7 @@ class cwrc_entities_external_handler
 class cwrc_entities_viaf extends cwrc_entities_external_handler
 {
     var $uriPrefix = 'http://viaf.org/viaf/';
+    var $LODSourceReadible = 'VIAF';
 
     function is_URI($uriStr)
     {
@@ -311,9 +342,6 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
         $qry = $refURI.'viaf.xml';
         $response = file_get_contents($qry);
         
-        //echo $response;
-        //$xmlObj = new SimpleXMLElement($response);
-
         $domObj = new DOMDocument();
         $domObj->loadXML($response);
 
@@ -353,7 +381,6 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
 
         // grab label from VIAF response
         $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield[@dtype="MARC21"]/ns2:subfield[@code="'.$marcCodeSelector.'"]/text()';
-        echo $xpathStr;
         $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
         if ( ! $ret['label'])
@@ -361,7 +388,6 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
             //check UNIMarc
             // grab label from VIAF response
             $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield/ns2:subfield[@code="'.$marcCodeSelector.'"]/text()';
-            echo $xpathStr;
             $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
         }
 
@@ -378,7 +404,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
         $ret['refID'] = preg_replace("#".$this->uriPrefix."([^/]*)/?#",'${1}', $refURI);
 
         $ret['LODSource'] = 'viaf';
-        $ret['LODSourceReadible'] = 'VIAF';
+        $ret['LODSourceReadible'] = $this->LODSourceReadible;
 
         return $ret;
     }
@@ -393,6 +419,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
 {
     var $uriPrefix = 'http://www.geonames.org/';
     var $qryPrefix = 'http://ws.geonames.org/get?username=cwrcgeonames&geonameId=';
+    var $LODSourceReadible = 'GeoNames';
 
     function is_URI($uriStr)
     {
@@ -453,7 +480,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         $ret['refID'] = $refID;
 
         $ret['LODSource'] = 'geonameid';
-        $ret['LODSourceReadible'] = 'GeoNames';
+        $ret['LODSourceReadible'] = $this->LODSourceReadible;
 
         return $ret;
     }
@@ -469,6 +496,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
 {
     var $uriPrefix = 'https://www.google.ca/maps/place/';
     var $qryPrefix = 'http://maps.googleapis.com/maps/api/geocode/xml?sensor=false&address=';
+    var $LODSourceReadible = 'Google Maps';
 
     function is_URI($uriStr)
     {
@@ -486,7 +514,6 @@ class cwrc_entities_google extends cwrc_entities_external_handler
 
         $addressStr = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
         $qry = $this->qryPrefix.$addressStr;
-        //print_r("\n\n" .$tmp ."\n");
 
         //ToDo: try/catch if server down or mistaken uri
         $response = file_get_contents($qry);
@@ -527,7 +554,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
         $ret['refID'] = $addressStr;
 
         $ret['LODSource'] = 'googlemaps';
-        $ret['LODSourceReadible'] = 'Google Maps';
+        $ret['LODSourceReadible'] = $this->LODSourceReadible;
 
         return $ret;
     }
