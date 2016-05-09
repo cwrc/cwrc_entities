@@ -406,7 +406,7 @@ function cwrc_entities_create_stub($typeStruct, $xmlStr)
   $fedora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection_pid);
 
   // main content datastream
-  $datastream = $object->constructDatastream($typeStruct['DSID'], 'M');
+  $datastream = $object->constructDatastream($typeStruct['ds_id'], 'M');
   $datastream->mimetype = 'text/xml';
   $datastream->setContentFromString($xml);
   $fedora_object->ingestDatastream($datastream);
@@ -503,14 +503,17 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
                 {
                     case "Personal":
                         $tmp = 'cwrc:person-entityCModel';
+                        $ds_id = 'PERSON';
                         $marcCodeSelector = "a";
                         break;
                     case "Corporate":
                         $tmp = 'cwrc:organization-entityCModel';
+                        $ds_id = 'ORGANIZATION';
                         $marcCodeSelector = "a";
                         break;
                     case "UniformTitleWork":
                         $tmp = 'cwrc:citationCModel';
+                        $ds_id = 'MODS';
                         $marcCodeSelector = "t";
                         break;
                     default:
@@ -549,6 +552,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
 
         $ret['LODSource'] = 'viaf';
         $ret['LODSourceReadible'] = $this->LODSourceReadible;
+        $ret['ds_id'] = $ds_id;
 
         return $ret;
     }
@@ -626,6 +630,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
 
         $ret['LODSource'] = 'geonameid';
         $ret['LODSourceReadible'] = $this->LODSourceReadible;
+        $ret['ds_id'] = 'PLACE';
 
         return $ret;
     }
@@ -700,6 +705,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
 
         $ret['LODSource'] = 'googlemaps';
         $ret['LODSourceReadible'] = $this->LODSourceReadible;
+        $ret['ds_id'] = 'PLACE';
 
         return $ret;
     }
