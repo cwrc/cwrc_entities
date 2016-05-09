@@ -65,7 +65,7 @@ function cwrc_entities_external_exists($refURI)
         $tmp = $handler->is_URI($refURI);
         if ($tmp)
         {
-            $ret = stub_exists($refURI, $handler->LODSourceReadible);
+            $ret = cwrc_entities_stub_exists($refURI, $handler->LODSourceReadible);
             break;
         }
     }
@@ -123,37 +123,93 @@ function cwrc_entities_external_create_stub($typeStruct)
   switch ($typeStruct['cModel'])
   {
     case 'cwrc:person-entityCModel':
-      $xml = populateTemplatePerson($typeStruct);
+      $xml = cwrc_entities_populateTemplatePerson($typeStruct);
       break;
     case 'cwrc:organization-entityCModel':
-      $xml = populateTemplateOrganization($typeStruct);
+      $xml = cwrc_entities_populateTemplateOrganization($typeStruct);
       break;
     case 'cwrc:place-entityCModel':
-      $xml = populateTemplatePlace($typeStruct);
+      $xml = cwrc_entities_populateTemplatePlace($typeStruct);
       break;
     case 'cwrc:citationCModel':
-      $xml = populateTemplateCitation($typeStruct);
+      $xml = cwrc_entities_populateTemplateCitation($typeStruct);
       break;
     default:
       break;
   }
 
-  print_r($xml);
+  if ($xml!='')
+  {
+    //cwrc_entities_create_stub($typeStruct, $xml);
+  }
+  else
+  {
+    watchdog_exception('cwrc_entities', 'cwrc_entities_external_create_stub', 'XML template empty :'.$typeStruct['cModel'].' '.$typeStruct['refURI'], array(), WATCHDOG_ERROR);
+  }
+  //print_r($xml);
 }
 
 
 /**
  * given a reference URI and LOD Source, determine is a stub entity
  * exists
+ *
+ * @param refURI
+ *    reference URI to search for
+ *
+ * @param LODSource
+ *    the name of the linked open data source
+ *
+ * @return 
+ *    true if the above pair found, false otherwise
+ *
  */
-function stub_exists($refURI, $LODSource)
+function cwrc_entities_stub_exists($refURI, $LODSource)
 {
   $ret = false;
+
+  $limit = 1;
+  $offset = 0;
+  $params = array(
+      'fl' => 'PID, fgs_label_s, cwrc_entity_entityId_ms, cwrc_entity_project_id_ms'
+      , 'defType' => 'dismax'
+      , 'fq' => 'cwrc_entity_entityId_ms:"'.str_replace(':', '\\:', $refURI).'" AND cwrc_entity_project_id_ms:"'.$LODSource.'"'
+    );
+
+  $url = parse_url(variable_get('islandora_solr_url', 'localhost:8080/solr'));
+
+  // Use Solr directly rather than the wrapper as it's easier to return JSON,
+  // and entities are likely to be filtered out by the default config.
+  $solr = new Apache_Solr_Service($url['host'], $url['port'], $url['path'] . '/');
+  $solr->setCreateDocuments(0);
+  try {
+    $results = $solr->search($query, $offset, $limit, $params);
+    $results = json_decode($results->getRawResponse(), TRUE);
+    // print_r($results);
+    if ( $results && $results['response']['numFound'] != 0 )
+    {
+      $ret = true;
+    }
+  }
+  catch (Exception $exception) {
+    watchdog_exception('cwrc_entities', $exception, 'Got an exception while searching.', array(), WATCHDOG_ERROR);
+  }
   return $ret;
 }
 
 
-function populateTemplatePerson($typeStruct)
+
+
+/**
+ * an XML template to populated a Person entity
+ *
+ * @param typeStruct
+ *    datastruct containing the necessary details for complete the template
+ *
+ * @return
+ *    completed XML string
+ */
+function cwrc_entities_populateTemplatePerson($typeStruct)
 {
   $today = date('Y-m-d');
   $xml = <<<EOF
@@ -186,7 +242,17 @@ EOF;
   return $xml;
 }
 
-function populateTemplateOrganization($typeStruct)
+
+/**
+ * an XML template to populated a Organization entity
+ *
+ * @param typeStruct
+ *    datastruct containing the necessary details for complete the template
+ *
+ * @return
+ *    completed XML string
+ */
+function cwrc_entities_populateTemplateOrganization($typeStruct)
 {
   $today = date('Y-m-d');
   $xml = <<<EOF
@@ -219,7 +285,16 @@ EOF;
 }
 
 
-function populateTemplatePlace($typeStruct)
+/**
+ * an XML template to populated a Place entity
+ *
+ * @param typeStruct
+ *    datastruct containing the necessary details for complete the template
+ *
+ * @return
+ *    completed XML string
+ */
+function cwrc_entities_populateTemplatePlace($typeStruct)
 {
   $today = date('Y-m-d');
   $xml = <<<EOF
@@ -258,7 +333,16 @@ EOF;
   return $xml;
 }
 
-function populateTemplateCitation($typeStruct)
+/**
+ * an XML template to populated a Title entity
+ *
+ * @param typeStruct
+ *    datastruct containing the necessary details for complete the template
+ *
+ * @return
+ *    completed XML string
+ */
+function cwrc_entities_populateTemplateCitation($typeStruct)
 {
   $today = date('Y-m-d');
   $xml = <<<EOF
@@ -267,6 +351,12 @@ function populateTemplateCitation($typeStruct)
     <titleInfo valueURI="{$typeStruct['refURI']}">
         <title>{$typeStruct['label']}</title>
     </titleInfo>
+    <name type="personal">
+        <namePart>{$typeStruct['author']}</namePart>
+        <role>
+            <roleTerm type="text" authority="marcrealtor">Author</roleTerm>
+        </role>
+    </name>
     <identifier type="viaf">{$typeStruct['refURI']}</identifier>
     <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
     <recordInfo>
@@ -280,6 +370,60 @@ function populateTemplateCitation($typeStruct)
 EOF;
 
   return $xml;
+}
+
+/**
+ * save the stub entity 
+ *
+ * @param typeStruct
+ *    datastruct containing the necessary details for complete the template
+ * @param xmlStr
+ *    The contents of the CWRC entity created from a template
+ *
+ * @return
+ *    completed XML string
+ */
+function cwrc_entities_create_stub($typeStruct, $xmlStr)
+{
+
+  //ToDo: what should the collection PID be?
+  $collection_pid = 'cwrc:asfd';
+  //ToDo: add as a configurable parameter?
+  //ToDo: is this the proper workflow? 
+  $activity_param = array(
+     WorkflowConst::STAMP => 'cwrc:cre'
+     , WorkflowConst::CATEGORY => 'created'
+     , WorkflowConst::STATUS => 'c'
+  );
+  //ToDo: add as a configurable parameter?
+  $entityToDCXSLT = '/xslt/entity_to_dc.xsl';
+
+  $tuque = islandora_get_tuque_connection();
+  $fedora_object = $tuque->repository->constructObject('cwrc', TRUE);
+  $fedora_object->models = array($typeStruct['cModel']);
+  $fedora_object->label = array($typeStruct['label']);
+
+  $fedora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection_pid);
+
+  // main content datastream
+  $datastream = $object->constructDatastream($typeStruct['DSID'], 'M');
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromString($xml);
+  $fedora_object->ingestDatastream($datastream);
+
+  // workflow record
+  if (isset($activity_params)) {
+    islandora_markup_entity_add_workflow($fedora_object, $activity_params);
+  }
+
+  // DC record
+  $dc = islandora_markup_entity_build_DC($fedora_object, $entityToDCXSLT, $xml);
+  islandora_markup_entity_update_DC($fedora_object, $dc);
+
+  // ingest
+  $object_object = $tuque->repository->ingestObject($fedora_object);
+
+  print_r($object->id);
 }
 
 
@@ -437,6 +581,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         //$tmpStr = preg_replace("#".$uriPrefix."#",'', $refURI);
         
         // get ID from given URI and add to a lookup API call to return XML
+        // ToDo: use preg_replace for parsing URL instead of substr (see other method)
         $tmpPrefixLen = strlen($this->uriPrefix);
         $refId = substr($refURI, $tmpPrefixLen, strlen($refURI)-$tmpPrefixLen);
         $qry = $this->qryPrefix.$refId;
