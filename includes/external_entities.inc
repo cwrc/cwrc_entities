@@ -582,12 +582,8 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         $ret = null;
         $marcCodeSelector = null;
 
-        //$tmpStr = preg_replace("#".$uriPrefix."#",'', $refURI);
-        
         // get ID from given URI and add to a lookup API call to return XML
-        // ToDo: use preg_replace for parsing URL instead of substr (see other method)
-        $tmpPrefixLen = strlen($this->uriPrefix);
-        $refId = substr($refURI, $tmpPrefixLen, strlen($refURI)-$tmpPrefixLen);
+        $refId = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
         $qry = $this->qryPrefix.$refId;
         //print_r("\nxx\n" .$tmp ."\nxx\n");
 
@@ -650,7 +646,6 @@ class cwrc_entities_google extends cwrc_entities_external_handler
 
     function is_URI($uriStr)
     {
-        //if (1===preg_match('#http://www.google.ca/maps/place#',$uriStr))
         if (1===preg_match("#$this->uriPrefix#",$uriStr))
             return TRUE;
         else
@@ -672,7 +667,6 @@ class cwrc_entities_google extends cwrc_entities_external_handler
         $domObj->loadXML($response);
 
         $xpathObj = new Domxpath($domObj);
-        //$xpathObj->registerNamespace('ns2',"http://viaf.org/viaf/terms#");
 
         $ret['cModel'] = 'cwrc:place-entityCModel';
         $ret['query'] = $qry; 
