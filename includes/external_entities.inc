@@ -143,9 +143,10 @@ function cwrc_entities_external_create_stub($typeStruct)
 
   if ($xml!='')
   {
-    print_r($typeStruct['refURI']);
-    print_r($xml);
-    //cwrc_entities_create_stub($typeStruct, $xml);
+    //print_r($typeStruct['refURI']);
+    //print_r($typeStruct);
+    //print_r($xml);
+    cwrc_entities_create_stub($typeStruct, $xml);
   }
   else
   {
@@ -389,12 +390,17 @@ EOF;
  */
 function cwrc_entities_create_stub($typeStruct, $xmlStr)
 {
+  module_load_include('inc', 'islandora_workflow_rest', 'includes/cwrc_workflow');
+  module_load_include('inc', 'islandora_workflow_rest', 'includes/basic_enum');
+  module_load_include('inc', 'islandora_workflow_rest', 'includes/workflow_item');
+  module_load_include('inc', 'islandora_workflow_rest', 'includes/utilities');
+  module_load_include('inc', 'cwrc_entities', 'includes/callbacks_entities');
 
   //ToDo: what should the collection PID be?
   $collection_pid = 'cwrc:asfd';
   //ToDo: add as a configurable parameter?
   //ToDo: is this the proper workflow? 
-  $activity_param = array(
+  $activity_params = array(
      WorkflowConst::STAMP => 'cwrc:cre'
      , WorkflowConst::CATEGORY => 'created'
      , WorkflowConst::STATUS => 'c'
@@ -405,14 +411,16 @@ function cwrc_entities_create_stub($typeStruct, $xmlStr)
   $tuque = islandora_get_tuque_connection();
   $fedora_object = $tuque->repository->constructObject('cwrc', TRUE);
   $fedora_object->models = array($typeStruct['cModel']);
-  $fedora_object->label = array($typeStruct['label']);
+  $fedora_object->label = $typeStruct['label'];
 
   $fedora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $collection_pid);
 
+
   // main content datastream
-  $datastream = $object->constructDatastream($typeStruct['ds_id'], 'M');
+  $datastream = $fedora_object->constructDatastream($typeStruct['ds_id'], 'M');
   $datastream->mimetype = 'text/xml';
-  $datastream->setContentFromString($xml);
+  $datastream->label= $typeStruct['ds_id'];
+  $datastream->setContentFromString($xmlStr);
   $fedora_object->ingestDatastream($datastream);
 
   // workflow record
@@ -421,13 +429,18 @@ function cwrc_entities_create_stub($typeStruct, $xmlStr)
   }
 
   // DC record
-  $dc = islandora_markup_entity_build_DC($fedora_object, $entityToDCXSLT, $xml);
-  islandora_markup_entity_update_DC($fedora_object, $dc);
+  $dc = islandora_markup_entity_build_DC($fedora_object->id, $entityToDCXSLT, $xmlStr);
+  //print_r($dc);
+  //print_r($xmlStr);
+  if (isset($dc))
+  {
+    islandora_markup_entity_update_DC($fedora_object, $dc);
+  }
 
   // ingest
-  $object_object = $tuque->repository->ingestObject($fedora_object);
+  $fedora_object = $tuque->repository->ingestObject($fedora_object);
 
-  print_r($object->id);
+  print_r($fedora_object->id);
 }
 
 
@@ -546,7 +559,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
           $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield[@dtype="MARC21"]/ns2:subfield[@code="'.$marcCodeSelector.'"]/text()';
           $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-          if ( ! $ret['label'])
+          if ( !$ret['label'])
           {
               //check UNIMarc
               // grab label from VIAF response
@@ -556,8 +569,12 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
 
           if ( $ret['cModel'] === 'cwrc:citationCModel' )
           {
-              $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield/ns2:subfield[@code="a"]';
+              $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield[@dtype="MARC21"]/ns2:subfield[@code="a"]';
               $ret['author'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+              if ( !$ret['author'])
+              {
+                $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield/ns2:subfield[@code="a"]';
+              }
           }
 
           $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Virtual International Authority File (VIAF) database.';
