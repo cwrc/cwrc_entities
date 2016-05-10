@@ -143,13 +143,14 @@ function cwrc_entities_external_create_stub($typeStruct)
 
   if ($xml!='')
   {
+    print_r($typeStruct['refURI']);
+    print_r($xml);
     //cwrc_entities_create_stub($typeStruct, $xml);
   }
   else
   {
     watchdog_exception('cwrc_entities', 'cwrc_entities_external_create_stub', 'XML template empty :'.$typeStruct['cModel'].' '.$typeStruct['refURI'], array(), WATCHDOG_ERROR);
   }
-  //print_r($xml);
 }
 
 
@@ -487,76 +488,89 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
           $refURI = $refURI . '/';
         }
         $qry = $refURI.'viaf.xml';
-        $response = file_get_contents($qry);
-        
-        $domObj = new DOMDocument();
-        $domObj->loadXML($response);
 
-        $xpathObj = new Domxpath($domObj);
-        $xpathObj->registerNamespace('ns2',"http://viaf.org/viaf/terms#");
 
-        // grab type from VIAF response
-        $queryResult = $xpathObj->query('/ns2:VIAFCluster/ns2:nameType/text()');
-        foreach ($queryResult as $node)
+        // use curl to lookup Linked Open Data source to retrieve and parse
+        // xml response
+        $ch = curl_init($qry);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        if( ($response = curl_exec($ch) ) === false)
         {
-            $tmp = $node->textContent;
-            if ($tmp)
-            {
-                switch($tmp)
-                {
-                    case "Personal":
-                        $tmp = 'cwrc:person-entityCModel';
-                        $ds_id = 'PERSON';
-                        $marcCodeSelector = "a";
-                        break;
-                    case "Corporate":
-                        $tmp = 'cwrc:organization-entityCModel';
-                        $ds_id = 'ORGANIZATION';
-                        $marcCodeSelector = "a";
-                        break;
-                    case "UniformTitleWork":
-                        $tmp = 'cwrc:citationCModel';
-                        $ds_id = 'MODS';
-                        $marcCodeSelector = "t";
-                        break;
-                    default:
-                        $tmp = 'unknown';
-                        break;
-                }
-                break;
-            }
+          $errStr = 'Error during curl external linked open data lookup: '.curl_error($ch) . ' ' . $qry;
+          echo 'Curl error: ' . $errStr;
+          watchdog('cwrc_entities', $errStr, array(), WATCHDOG_ERROR);
         }
-        $ret['cModel'] = $tmp;
-        $ret['query'] = $qry;
-
-        // grab label from VIAF response
-        $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield[@dtype="MARC21"]/ns2:subfield[@code="'.$marcCodeSelector.'"]/text()';
-        $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
-
-        if ( ! $ret['label'])
+        else
         {
-            //check UNIMarc
-            // grab label from VIAF response
-            $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield/ns2:subfield[@code="'.$marcCodeSelector.'"]/text()';
-            $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          $domObj = new DOMDocument();
+          $domObj->loadXML($response);
+
+          $xpathObj = new Domxpath($domObj);
+          $xpathObj->registerNamespace('ns2',"http://viaf.org/viaf/terms#");
+
+          // grab type from VIAF response
+          $queryResult = $xpathObj->query('/ns2:VIAFCluster/ns2:nameType/text()');
+          foreach ($queryResult as $node)
+          {
+              $tmp = $node->textContent;
+              if ($tmp)
+              {
+                  switch($tmp)
+                  {
+                      case "Personal":
+                          $tmp = 'cwrc:person-entityCModel';
+                          $ds_id = 'PERSON';
+                          $marcCodeSelector = "a";
+                          break;
+                      case "Corporate":
+                          $tmp = 'cwrc:organization-entityCModel';
+                          $ds_id = 'ORGANIZATION';
+                          $marcCodeSelector = "a";
+                          break;
+                      case "UniformTitleWork":
+                          $tmp = 'cwrc:citationCModel';
+                          $ds_id = 'MODS';
+                          $marcCodeSelector = "t";
+                          break;
+                      default:
+                          $tmp = 'unknown';
+                          break;
+                  }
+                  break;
+              }
+          }
+          $ret['cModel'] = $tmp;
+          $ret['query'] = $qry;
+
+          // grab label from VIAF response
+          $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield[@dtype="MARC21"]/ns2:subfield[@code="'.$marcCodeSelector.'"]/text()';
+          $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+
+          if ( ! $ret['label'])
+          {
+              //check UNIMarc
+              // grab label from VIAF response
+              $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield/ns2:subfield[@code="'.$marcCodeSelector.'"]/text()';
+              $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          }
+
+          if ( $ret['cModel'] === 'cwrc:citationCModel' )
+          {
+              $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield/ns2:subfield[@code="a"]';
+              $ret['author'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          }
+
+          $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Virtual International Authority File (VIAF) database.';
+
+          $ret['refURI'] = $refURI;
+
+          $ret['refID'] = preg_replace("#".$this->uriPrefix."([^/]*)/?#",'${1}', $refURI);
+
+          $ret['LODSource'] = 'viaf';
+          $ret['LODSourceReadible'] = $this->LODSourceReadible;
+          $ret['ds_id'] = $ds_id;
+
         }
-
-        if ( $ret['cModel'] === 'cwrc:citationCModel' )
-        {
-            $xpathStr = '/ns2:VIAFCluster/ns2:mainHeadings/ns2:mainHeadingEl/ns2:datafield/ns2:subfield[@code="a"]';
-            $ret['author'] = self::getSingleXPathItem($xpathStr, $xpathObj);
-        }
-
-        $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Virtual International Authority File (VIAF) database.';
-
-        $ret['refURI'] = $refURI;
-
-        $ret['refID'] = preg_replace("#".$this->uriPrefix."([^/]*)/?#",'${1}', $refURI);
-
-        $ret['LODSource'] = 'viaf';
-        $ret['LODSourceReadible'] = $this->LODSourceReadible;
-        $ret['ds_id'] = $ds_id;
-
         return $ret;
     }
 }
@@ -588,21 +602,16 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         // get ID from given URI and add to a lookup API call to return XML
         $refId = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
         $qry = $this->qryPrefix.$refId;
-        //print_r("\nxx\n" .$qry ."\nxx\n");
 
-        //$response = @file_get_contents($qry);
-
+        // use curl to lookup Linked Open Data source to retrieve and parse
+        // xml response
         $ch = curl_init($qry);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         if( ($response = curl_exec($ch) ) === false)
         {
-            echo 'Curl error: ' . curl_error($ch);
-          watchdog(
-            'cwrc_entities'
-            , 'Error during curl external linked open data lookup: '.curl_error($ch)
-            , WATCHDOG_ERROR
-          );
-
+          $errStr = 'Error during curl external linked open data lookup: '.curl_error($ch) . ' ' . $qry;
+          echo 'Curl error: ' . $errStr;
+          watchdog('cwrc_entities', $errStr, array(), WATCHDOG_ERROR);
         }
         else
         {
@@ -646,7 +655,6 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
             $ret['ds_id'] = 'PLACE';
         }
 
-        print_r("\nxx\n" .$qry ."\nxx\n");
         return $ret;
     }
 }
@@ -679,46 +687,56 @@ class cwrc_entities_google extends cwrc_entities_external_handler
         $addressStr = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
         $qry = $this->qryPrefix.$addressStr;
 
-        //ToDo: try/catch if server down or mistaken uri
-        $response = file_get_contents($qry);
-        
-        $domObj = new DOMDocument();
-        $domObj->loadXML($response);
+        // use curl to lookup Linked Open Data source to retrieve and parse
+        // xml response
+        $ch = curl_init($qry);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        if( ($response = curl_exec($ch) ) === false)
+        {
+          $errStr = 'Error during curl external linked open data lookup: '.curl_error($ch) . ' ' . $qry;
+          echo 'Curl error: ' . $errStr;
+          watchdog('cwrc_entities', $errStr, array(), WATCHDOG_ERROR);
+        }
+        else
+        {
+          $domObj = new DOMDocument();
+          $domObj->loadXML($response);
 
-        $xpathObj = new Domxpath($domObj);
+          $xpathObj = new Domxpath($domObj);
 
-        $ret['cModel'] = 'cwrc:place-entityCModel';
-        $ret['query'] = $qry; 
+          $ret['cModel'] = 'cwrc:place-entityCModel';
+          $ret['query'] = $qry; 
 
-        // grab label from response
-        $xpathStr = '/GeocodeResponse/result[1]/address_component/long_name[following-sibling::type/text()="locality"]';
-        $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab label from response
+          $xpathStr = '/GeocodeResponse/result[1]/address_component/long_name[following-sibling::type/text()="locality"]';
+          $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-        // grab latitude from response
-        $xpathStr = '/GeocodeResponse/result[1]/geometry[1]/location[1]/lat[1]';
-        $ret['latitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab latitude from response
+          $xpathStr = '/GeocodeResponse/result[1]/geometry[1]/location[1]/lat[1]';
+          $ret['latitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-        // grab longitude from response
-        $xpathStr = '/GeocodeResponse/result[1]/geometry[1]/location[1]/lng[1]';
-        $ret['longitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab longitude from response
+          $xpathStr = '/GeocodeResponse/result[1]/geometry[1]/location[1]/lng[1]';
+          $ret['longitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-        // grab longitude from response
-        $xpathStr = '/GeocodeResponse/result[1]/address_component/long_name[following-sibling::type/text()="country"]';
-        $ret['countryName'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab longitude from response
+          $xpathStr = '/GeocodeResponse/result[1]/address_component/long_name[following-sibling::type/text()="country"]';
+          $ret['countryName'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-        // grab longitude from response
-        $xpathStr = '/GeocodeResponse/result[1]/address_component/long_name[following-sibling::type/text()="administrative_area_level_1"]';
-        $ret['state/province'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab longitude from response
+          $xpathStr = '/GeocodeResponse/result[1]/address_component/long_name[following-sibling::type/text()="administrative_area_level_1"]';
+          $ret['state/province'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-        $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Google Maps database.';
+          $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Google Maps database.';
 
-        $ret['refURI'] = $refURI;
+          $ret['refURI'] = $refURI;
 
-        $ret['refID'] = $addressStr;
+          $ret['refID'] = $addressStr;
 
-        $ret['LODSource'] = 'googlemaps';
-        $ret['LODSourceReadible'] = $this->LODSourceReadible;
-        $ret['ds_id'] = 'PLACE';
+          $ret['LODSource'] = 'googlemaps';
+          $ret['LODSourceReadible'] = $this->LODSourceReadible;
+          $ret['ds_id'] = 'PLACE';
+        }
 
         return $ret;
     }
