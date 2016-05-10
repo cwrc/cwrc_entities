@@ -230,7 +230,7 @@ function cwrc_entities_populateTemplatePerson($typeStruct)
             </identity>
             <recordInfo>
                 <originInfo>
-                    <projectId>{$typeStruct['LODSource']}</projectId>
+                    <projectId>{$typeStruct['LODSourceReadible']}</projectId>
                     <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
                     <recordCreationDate>{$today}</recordCreationDate>
                     <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
@@ -273,7 +273,7 @@ function cwrc_entities_populateTemplateOrganization($typeStruct)
             </identity>
             <recordInfo>
                 <originInfo>
-                    <projectId>{$typeStruct['LODSource']}</projectId>
+                    <projectId>{$typeStruct['LODSourceReadible']}</projectId>
                     <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
                     <recordCreationDate>{$today}</recordCreationDate>
                     <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
@@ -364,7 +364,7 @@ function cwrc_entities_populateTemplateCitation($typeStruct)
     <identifier type="viaf">{$typeStruct['refURI']}</identifier>
     <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
     <recordInfo>
-        <recordContentSource>VIAF</recordContentSource>
+        <recordContentSource>{$typeStruct['LODSourceReadible']}</recordContentSource>
         <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
         <recordCreationDate encoding="w3cdtf">$today</recordCreationDate>
         <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
