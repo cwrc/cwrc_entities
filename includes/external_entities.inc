@@ -33,7 +33,10 @@ function cwrc_entities_traverse_xml($xmlStr) {
       if (!cwrc_entities_external_exists($result->textContent))
         {
           $tmp = cwrc_entities_external_lookup($result->textContent);
-          cwrc_entities_external_create_stub($tmp);
+          if ( $tmp ) 
+          {
+              cwrc_entities_external_create_stub($tmp);
+          }
         }
   }
 }
@@ -100,7 +103,7 @@ function cwrc_entities_external_lookup($refURI)
         if ($tmp)
         {
             $ret = $handler->get_external($refURI);
-            print_r($ret);
+            //print_r($ret);
             break;
         }
     }
@@ -579,55 +582,71 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
 
     function get_external($refURI)
     {
-        $ret = null;
+        $ret = '';
         $marcCodeSelector = null;
 
         // get ID from given URI and add to a lookup API call to return XML
         $refId = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
         $qry = $this->qryPrefix.$refId;
-        //print_r("\nxx\n" .$tmp ."\nxx\n");
+        //print_r("\nxx\n" .$qry ."\nxx\n");
 
-        $response = file_get_contents($qry);
-        
-        $domObj = new DOMDocument();
-        $domObj->loadXML($response);
+        //$response = @file_get_contents($qry);
 
-        $xpathObj = new Domxpath($domObj);
+        $ch = curl_init($qry);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        if( ($response = curl_exec($ch) ) === false)
+        {
+            echo 'Curl error: ' . curl_error($ch);
+          watchdog(
+            'cwrc_entities'
+            , 'Error during curl external linked open data lookup: '.curl_error($ch)
+            , WATCHDOG_ERROR
+          );
 
-        $ret['cModel'] = 'cwrc:place-entityCModel';
-        $ret['query'] = $qry;
+        }
+        else
+        {
+            $domObj = new DOMDocument();
+            $domObj->loadXML($response);
 
-        // grab label from GeoNames response
-        $xpathStr = '/geoname/toponymName[1]/text()';
-        $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+            $xpathObj = new Domxpath($domObj);
 
-        // grab latitude from GeoNames response
-        $xpathStr = '/geoname/lat[1]/text()';
-        $ret['latitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+            $ret['cModel'] = 'cwrc:place-entityCModel';
+            $ret['query'] = $qry;
 
-        // grab longitude from GeoNames response
-        $xpathStr = '/geoname/lng[1]/text()';
-        $ret['longitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+            // grab label from GeoNames response
+            $xpathStr = '/geoname/toponymName[1]/text()';
+            $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-        // grab longitude from GeoNames response
-        $xpathStr = '/geoname/countryName[1]/text()';
-        $ret['countryName'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+            // grab latitude from GeoNames response
+            $xpathStr = '/geoname/lat[1]/text()';
+            $ret['latitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-        // grab longitude from GeoNames response
-        $xpathStr = '/geoname/adminName1[1]/text()';
-        $ret['state/province'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+            // grab longitude from GeoNames response
+            $xpathStr = '/geoname/lng[1]/text()';
+            $ret['longitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+
+            // grab longitude from GeoNames response
+            $xpathStr = '/geoname/countryName[1]/text()';
+            $ret['countryName'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+
+            // grab longitude from GeoNames response
+            $xpathStr = '/geoname/adminName1[1]/text()';
+            $ret['state/province'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
 
-        $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Geonames database.';
+            $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Geonames database.';
 
-        $ret['refURI'] = $refURI;
+            $ret['refURI'] = $refURI;
 
-        $ret['refID'] = $refID;
+            $ret['refID'] = $refID;
 
-        $ret['LODSource'] = 'geonameid';
-        $ret['LODSourceReadible'] = $this->LODSourceReadible;
-        $ret['ds_id'] = 'PLACE';
+            $ret['LODSource'] = 'geonameid';
+            $ret['LODSourceReadible'] = $this->LODSourceReadible;
+            $ret['ds_id'] = 'PLACE';
+        }
 
+        print_r("\nxx\n" .$qry ."\nxx\n");
         return $ret;
     }
 }
