@@ -30,14 +30,14 @@ function cwrc_entities_traverse_xml($xmlStr) {
   // stub already exists queries
   $queryResult = $xpathObj->query('(//@ref | //@REF)');
   foreach($queryResult as $result){
-      if (!cwrc_entities_external_exists($result->textContent))
-        {
-          $tmp = cwrc_entities_external_lookup($result->textContent);
-          if ( $tmp ) 
-          {
-              cwrc_entities_external_create_stub($tmp);
-          }
-        }
+    if (!cwrc_entities_external_exists($result->textContent)) 
+    {
+      $tmp = cwrc_entities_external_lookup($result->textContent);
+      if ( $tmp ) 
+      {
+          cwrc_entities_external_create_stub($tmp);
+      }
+    }
   }
 }
 
@@ -190,7 +190,7 @@ function cwrc_entities_stub_exists($refURI, $LODSource)
   try {
     $results = $solr->search($query, $offset, $limit, $params);
     $results = json_decode($results->getRawResponse(), TRUE);
-    // print_r($results);
+    //print_r($results);
     if ( $results && $results['response']['numFound'] != 0 )
     {
       $ret = true;
@@ -220,28 +220,26 @@ function cwrc_entities_populateTemplatePerson($typeStruct)
   $xml = <<<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
-<cwrc>
-    <entity>
-        <person>
-            <identity>
-                <preferredForm>
-                    <namePart>{$typeStruct['label']}</namePart>
-                </preferredForm>
-                <sameAs>{$typeStruct['refURI']}</sameAs>
-            </identity>
-            <recordInfo>
-                <originInfo>
-                    <projectId>{$typeStruct['LODSourceReadible']}</projectId>
-                    <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
-                    <recordCreationDate>{$today}</recordCreationDate>
-                    <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
-                </originInfo>
-                <entityId>{$typeStruct['refURI']}</entityId>
-                <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
-            </recordInfo>
-        </person>
-    </entity>
-</cwrc>
+<entity>
+    <person>
+        <identity>
+            <preferredForm>
+                <namePart>{$typeStruct['label']}</namePart>
+            </preferredForm>
+            <sameAs>{$typeStruct['refURI']}</sameAs>
+        </identity>
+        <recordInfo>
+            <originInfo>
+                <projectId>{$typeStruct['LODSourceReadible']}</projectId>
+                <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
+                <recordCreationDate>{$today}</recordCreationDate>
+                <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
+            </originInfo>
+            <entityId>{$typeStruct['refURI']}</entityId>
+            <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
+        </recordInfo>
+    </person>
+</entity>
 EOF;
 
   return $xml;
@@ -263,28 +261,26 @@ function cwrc_entities_populateTemplateOrganization($typeStruct)
   $xml = <<<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
-<cwrc>
-    <entity>
-        <organization>
-            <identity>
-                <preferredForm>
-                    <namePart>{$typeStruct['label']}</namePart>
-                </preferredForm>
-                <sameAs>{$typeStruct['refURI']}</sameAs>
-            </identity>
-            <recordInfo>
-                <originInfo>
-                    <projectId>{$typeStruct['LODSourceReadible']}</projectId>
-                    <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
-                    <recordCreationDate>{$today}</recordCreationDate>
-                    <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
-                </originInfo>
-                <entityId>{$typeStruct['refURI']}</entityId>
-                <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
-            </recordInfo>
-        </organization>
-    </entity>
-</cwrc>
+<entity>
+    <organization>
+        <identity>
+            <preferredForm>
+                <namePart>{$typeStruct['label']}</namePart>
+            </preferredForm>
+            <sameAs>{$typeStruct['refURI']}</sameAs>
+        </identity>
+        <recordInfo>
+            <originInfo>
+                <projectId>{$typeStruct['LODSourceReadible']}</projectId>
+                <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
+                <recordCreationDate>{$today}</recordCreationDate>
+                <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
+            </originInfo>
+            <entityId>{$typeStruct['refURI']}</entityId>
+            <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
+        </recordInfo>
+    </organization>
+</entity>
 EOF;
   return $xml;
 }
@@ -305,34 +301,32 @@ function cwrc_entities_populateTemplatePlace($typeStruct)
   $xml = <<<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
-<cwrc>
-    <entity>
-        <place>
-            <identity>
-                <preferredForm>
-                    <namePart>{$typeStruct['label']}</namePart>
-                </preferredForm>
-                <sameAs>{$typeStruct['refURI']}</sameAs>
-            </identity>
-            <description>
-                <latitude>{$typeStruct['latitude']}</latitude>
-                <longitude>{$typeStruct['longitude']}</longitude>
-                <countryName>{$typeStruct['countryName']}</countryName>
-                <firstAdministrativeDivision>{$typeStruct['state/province']}</firstAdministrativeDivision>
-            </description>
-            <recordInfo>
-                <originInfo>
-                    <projectId>{$typeStruct['LODSourceReadible']}</projectId>
-                    <recordIdentifier source="{$typeStruct['LODSource']}">{$typeStruct['refID']}</recordIdentifier>
-                    <recordCreationDate>{$today}</recordCreationDate>
-                    <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
-                </originInfo>
-                <entityId>{$typeStruct['refURI']}</entityId>
-                <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
-            </recordInfo>
-        </place>
-    </entity>
-</cwrc>
+<entity>
+    <place>
+        <identity>
+            <preferredForm>
+                <namePart>{$typeStruct['label']}</namePart>
+            </preferredForm>
+            <sameAs>{$typeStruct['refURI']}</sameAs>
+        </identity>
+        <description>
+            <latitude>{$typeStruct['latitude']}</latitude>
+            <longitude>{$typeStruct['longitude']}</longitude>
+            <countryName>{$typeStruct['countryName']}</countryName>
+            <firstAdministrativeDivision>{$typeStruct['state/province']}</firstAdministrativeDivision>
+        </description>
+        <recordInfo>
+            <originInfo>
+                <projectId>{$typeStruct['LODSourceReadible']}</projectId>
+                <recordIdentifier source="{$typeStruct['LODSource']}">{$typeStruct['refID']}</recordIdentifier>
+                <recordCreationDate>{$today}</recordCreationDate>
+                <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
+            </originInfo>
+            <entityId>{$typeStruct['refURI']}</entityId>
+            <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a href="http://creativecommons.org/licenses/by-nc/4.0/" rel="license">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
+        </recordInfo>
+    </place>
+</entity>
 EOF;
 
   return $xml;
@@ -366,8 +360,8 @@ function cwrc_entities_populateTemplateCitation($typeStruct)
     <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
     <recordInfo>
         <recordContentSource>{$typeStruct['LODSourceReadible']}</recordContentSource>
-        <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
         <recordCreationDate encoding="w3cdtf">$today</recordCreationDate>
+        <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
         <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
     </recordInfo>
 </mods>
@@ -440,7 +434,7 @@ function cwrc_entities_create_stub($typeStruct, $xmlStr)
   // ingest
   $fedora_object = $tuque->repository->ingestObject($fedora_object);
 
-  print_r($fedora_object->id);
+  print("adding: " . $fedora_object->id . " : " . $fedora_object->label . " : " . $typeStruct['refURI'] . "\n");
 }
 
 
@@ -495,13 +489,19 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
         $ret = null;
         $marcCodeSelector = null;
 
+        // ToDo: how to properly handle cases where the user
+        // (a) enters a URI ending with a '/' 
+        // or (b) not ending with a '/'
+        // 2016-05-11 : this will create 2 separate stubs, one for each case
         // test if last character in the URI is a '/' and if not append 
         if (substr($refURI, -1)!='/')
         {
-          $refURI = $refURI . '/';
+          $qry = $refURI.'/'.'viaf.xml';
         }
-        $qry = $refURI.'viaf.xml';
-
+        else
+        {
+          $qry = $refURI.'viaf.xml';
+        }
 
         // use curl to lookup Linked Open Data source to retrieve and parse
         // xml response
@@ -617,8 +617,8 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         $marcCodeSelector = null;
 
         // get ID from given URI and add to a lookup API call to return XML
-        $refId = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
-        $qry = $this->qryPrefix.$refId;
+        $refID = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
+        $qry = $this->qryPrefix.$refID;
 
         // use curl to lookup Linked Open Data source to retrieve and parse
         // xml response
