@@ -48,9 +48,14 @@ function cwrc_entities_handle_external_uri($refURI)
   if (!cwrc_entities_external_exists($refURI)) 
   {
     $tmp = cwrc_entities_external_lookup($refURI);
-    if ( $tmp ) 
+    if ( $tmp  && $tmp['label'] ) 
     {
-        cwrc_entities_external_create_stub($tmp);
+      // create only if a label
+      cwrc_entities_external_create_stub($tmp);
+    }
+    else if ( $tmp )
+    {
+      // no label then report
     }
   }
 }
@@ -524,6 +529,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
         // xml response
         $ch = curl_init($qry);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // viaf redirects
         $response = curl_exec($ch);
         $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ( $response === false)
@@ -532,7 +538,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
           echo 'Curl error: ' . $errStr . "\n";
           watchdog('cwrc_entities', $errStr, array(), WATCHDOG_ERROR);
         }
-        else if ( $http_status != "200" and $http_status != "3011111" )
+        else if ( $http_status != "200" )
         {
           $errStr = 'Error during curl external linked open data lookup: '.curl_error($ch) . " [$http_status] " . ' ["' . $qry . '"]';
           echo 'Curl error: ' . $errStr . "\n";
@@ -580,6 +586,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
                   break;
               }
           }
+
           $ret['query'] = $qry;
           $ret['LODSource'] = 'viaf';
           $ret['LODSourceReadible'] = $this->LODSourceReadible;
@@ -612,6 +619,20 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
           }
 
           $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Virtual International Authority File (VIAF) database.';
+
+          // check to see if a label was found, if not report
+          if ( !$ret['label'] )
+          {
+            $errStr
+              = 'linked open data lookup - no error but no label: '
+              . "{\"" . $reponse . "\"] " 
+              . ' ["' . $qry . '"]'
+              . ' ["' . $refURI . '"]'
+              ;
+            echo 'Curl error: ' . $errStr . "\n";
+            watchdog('cwrc_entities', $errStr, array(), WATCHDOG_WARNING);
+          }
+
         }
         return $ret;
     }
@@ -649,6 +670,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         // xml response
         $ch = curl_init($qry);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // viaf redirects
         $response = curl_exec($ch);
         $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ( $response === false)
@@ -657,7 +679,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
           echo 'Curl error: ' . $errStr;
           watchdog('cwrc_entities', $errStr, array(), WATCHDOG_ERROR);
         }
-        else if ( $http_status != "200" and $http_status != "3011111" )
+        else if ( $http_status != "200" )
         {
           $errStr = 'Error during curl external linked open data lookup: '.curl_error($ch) . " [$http_status] " . ' ["' . $qry . '"]';
           echo 'Curl error: ' . $errStr . "\n";
@@ -665,46 +687,56 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         }
         else
         {
-            $domObj = new DOMDocument();
-            $domObj->loadXML($response);
+          $domObj = new DOMDocument();
+          $domObj->loadXML($response);
 
-            $xpathObj = new Domxpath($domObj);
+          $xpathObj = new Domxpath($domObj);
 
-            $ret['query'] = $qry;
-            $ret['LODSource'] = 'geonameid';
-            $ret['LODSourceReadible'] = $this->LODSourceReadible;
-            $ret['refURI'] = $refURI;
-            $ret['refID'] = $refID;
-            
-            $ret['cModel'] = 'cwrc:place-entityCModel';
-            $ret['ds_id'] = 'PLACE';
-            $ret['collectionPID'] = 'cwrc:externalEntityStub-Place';
-       
-            // grab label from GeoNames response
-            $xpathStr = '/geoname/toponymName[1]/text()';
-            $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          $ret['query'] = $qry;
+          $ret['LODSource'] = 'geonameid';
+          $ret['LODSourceReadible'] = $this->LODSourceReadible;
+          $ret['refURI'] = $refURI;
+          $ret['refID'] = $refID;
+          
+          $ret['cModel'] = 'cwrc:place-entityCModel';
+          $ret['ds_id'] = 'PLACE';
+          $ret['collectionPID'] = 'cwrc:externalEntityStub-Place';
+      
+          // grab label from GeoNames response
+          $xpathStr = '/geoname/toponymName[1]/text()';
+          $ret['label'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-            // grab latitude from GeoNames response
-            $xpathStr = '/geoname/lat[1]/text()';
-            $ret['latitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab latitude from GeoNames response
+          $xpathStr = '/geoname/lat[1]/text()';
+          $ret['latitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-            // grab longitude from GeoNames response
-            $xpathStr = '/geoname/lng[1]/text()';
-            $ret['longitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab longitude from GeoNames response
+          $xpathStr = '/geoname/lng[1]/text()';
+          $ret['longitude'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-            // grab longitude from GeoNames response
-            $xpathStr = '/geoname/countryName[1]/text()';
-            $ret['countryName'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab longitude from GeoNames response
+          $xpathStr = '/geoname/countryName[1]/text()';
+          $ret['countryName'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
-            // grab longitude from GeoNames response
-            $xpathStr = '/geoname/adminName1[1]/text()';
-            $ret['state/province'] = self::getSingleXPathItem($xpathStr, $xpathObj);
+          // grab longitude from GeoNames response
+          $xpathStr = '/geoname/adminName1[1]/text()';
+          $ret['state/province'] = self::getSingleXPathItem($xpathStr, $xpathObj);
 
+          $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Geonames database.';
 
-            $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Geonames database.';
-
+          // check to see if a label was found, if not report
+          if ( !$ret['label'] )
+          {
+            $errStr
+              = 'linked open data lookup - no error but no label: '
+              . "{\"" . $reponse . "\"] " 
+              . ' ["' . $qry . '"]'
+              . ' ["' . $refURI . '"]'
+              ;
+            echo 'Curl error: ' . $errStr . "\n";
+            watchdog('cwrc_entities', $errStr, array(), WATCHDOG_WARNING);
+          }
         }
-
         return $ret;
     }
 }
@@ -741,6 +773,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
         // xml response
         $ch = curl_init($qry);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // viaf redirects
         $response = curl_exec($ch);
         $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ( $response === false)
@@ -749,7 +782,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
           echo 'Curl error: ' . $errStr;
           watchdog('cwrc_entities', $errStr, array(), WATCHDOG_ERROR);
         }
-        else if ( $http_status != "200" and $http_status != "3011111" )
+        else if ( $http_status != "200" )
         {
           $errStr = 'Error during curl external linked open data lookup: '.curl_error($ch) . " [$http_status] " . ' ["' . $qry . '"]';
           echo 'Curl error: ' . $errStr . "\n";
@@ -794,8 +827,20 @@ class cwrc_entities_google extends cwrc_entities_external_handler
 
           $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Google Maps database.';
 
-        }
+          // check to see if a label was found, if not report
+          if ( !$ret['label'] )
+          {
+            $errStr
+              = 'linked open data lookup - no error but no label: '
+              . "{\"" . $reponse . "\"] " 
+              . ' ["' . $qry . '"]'
+              . ' ["' . $refURI . '"]'
+              ;
+            echo 'Curl error: ' . $errStr . "\n";
+            watchdog('cwrc_entities', $errStr, array(), WATCHDOG_WARNING);
+          }
 
+        }
         return $ret;
     }
 }
