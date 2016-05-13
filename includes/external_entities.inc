@@ -523,7 +523,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         if( ($response = curl_exec($ch) ) === false)
         {
-          $errStr = 'Error during curl external linked open data lookup: '.curl_error($ch) . ' ' . $qry;
+          $errStr = 'Error during curl external linked open data lookup: '.curl_error($ch) . ' ["' . $qry . '"]';
           echo 'Curl error: ' . $errStr;
           watchdog('cwrc_entities', $errStr, array(), WATCHDOG_ERROR);
         }

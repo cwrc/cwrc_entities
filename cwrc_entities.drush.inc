@@ -59,7 +59,7 @@ function drush_cwrc_entities_test()
 
 function drush_cwrc_entities_add_missing_stubs()
 {
-    drush_print("Extract, lookup, and create stubs for external entities");
+    drush_print("Add missing stub entities for external URIs");
 
     // Include modules.
     module_load_include('inc', 'cwrc_entities', 'includes/external_entities');
