@@ -71,11 +71,7 @@ function drush_cwrc_entities_add_missing_stubs()
 
     foreach ( $tmp['missingStubs'] as $uri )
     {
-      print($uri.'\n');
-      break;
+      print($uri."\n");
+      cwrc_entities_handle_external_uri($uri);
     }
-
-    //cwrc_entities_traverse_xml();
-
-
 }

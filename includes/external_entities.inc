@@ -30,13 +30,27 @@ function cwrc_entities_traverse_xml($xmlStr)
   // stub already exists queries
   $queryResult = $xpathObj->query('(//@ref | //@REF)');
   foreach($queryResult as $result){
-    if (!cwrc_entities_external_exists($result->textContent)) 
+    cwrc_entities_handle_external_uri($result->textContent);
+  }
+}
+
+
+/**
+ * handle an external entity URI by building a stub entity if it doesn't
+ * already exist 
+*
+* @param $refURI
+*     external open linked data entity URI 
+*
+*/
+function cwrc_entities_handle_external_uri($refURI) 
+{
+  if (!cwrc_entities_external_exists($refURI)) 
+  {
+    $tmp = cwrc_entities_external_lookup($refURI);
+    if ( $tmp ) 
     {
-      $tmp = cwrc_entities_external_lookup($result->textContent);
-      if ( $tmp ) 
-      {
-          cwrc_entities_external_create_stub($tmp);
-      }
+        cwrc_entities_external_create_stub($tmp);
     }
   }
 }
