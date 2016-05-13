@@ -16,8 +16,8 @@
 *     the XML doc containing the entity references
 *
 */
-function cwrc_entities_traverse_xml($xmlStr) {
-
+function cwrc_entities_traverse_xml($xmlStr) 
+{
   $domObj = new DOMDocument();
   $domObj->loadXML($xmlStr);
 
@@ -360,8 +360,8 @@ function cwrc_entities_populateTemplateCitation($typeStruct)
     <accessCondition type="use and reproduction">Use of this public-domain resource is governed by the <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</accessCondition>
     <recordInfo>
         <recordContentSource>{$typeStruct['LODSourceReadible']}</recordContentSource>
-        <recordCreationDate encoding="w3cdtf">$today</recordCreationDate>
         <recordIdentifier source="viafID">{$typeStruct['refID']}</recordIdentifier>
+        <recordCreationDate encoding="w3cdtf">$today</recordCreationDate>
         <recordOrigin>{$typeStruct['recordOrigin']}</recordOrigin>
     </recordInfo>
 </mods>
@@ -391,7 +391,7 @@ function cwrc_entities_create_stub($typeStruct, $xmlStr)
   module_load_include('inc', 'cwrc_entities', 'includes/callbacks_entities');
 
   //ToDo: what should the collection PID be?
-  $collection_pid = 'cwrc:asfd';
+  $collection_pid = $typeStruct['collectionPID']; 
   //ToDo: add as a configurable parameter?
   //ToDo: is this the proper workflow? 
   $activity_params = array(
@@ -533,15 +533,18 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
                       case "Personal":
                           $tmp = 'cwrc:person-entityCModel';
                           $ds_id = 'PERSON';
+                          $collection_pid = 'cwrc:externalEntityStub-Person';
                           $marcCodeSelector = "a";
                           break;
                       case "Corporate":
                           $tmp = 'cwrc:organization-entityCModel';
+                          $collection_pid = 'cwrc:externalEntityStub-Organization';
                           $ds_id = 'ORGANIZATION';
                           $marcCodeSelector = "a";
                           break;
                       case "UniformTitleWork":
                           $tmp = 'cwrc:citationCModel';
+                          $collection_pid = 'cwrc:externalEntityStub-Title';
                           $ds_id = 'MODS';
                           $marcCodeSelector = "t";
                           break;
@@ -553,6 +556,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
               }
           }
           $ret['cModel'] = $tmp;
+          $ret['collectionPID'] = $collection_pid;
           $ret['query'] = $qry;
 
           // grab label from VIAF response
@@ -638,6 +642,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
             $xpathObj = new Domxpath($domObj);
 
             $ret['cModel'] = 'cwrc:place-entityCModel';
+            $ret['collectionPID'] = 'cwrc:externalEntityStub-Place';
             $ret['query'] = $qry;
 
             // grab label from GeoNames response
@@ -722,6 +727,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
           $xpathObj = new Domxpath($domObj);
 
           $ret['cModel'] = 'cwrc:place-entityCModel';
+          $ret['collectionPID'] = 'cwrc:externalEntityStub-Place';
           $ret['query'] = $qry; 
 
           // grab label from response
