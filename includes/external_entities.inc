@@ -53,10 +53,6 @@ function cwrc_entities_handle_external_uri($refURI)
       // create only if a label
       cwrc_entities_external_create_stub($tmp);
     }
-    else if ( $tmp )
-    {
-      // no label then report
-    }
   }
 }
 
@@ -553,34 +549,36 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
           $xpathObj->registerNamespace('ns2',"http://viaf.org/viaf/terms#");
 
           // grab type from VIAF response
+          $cModel = '';
+          $viafType = '';
           $queryResult = $xpathObj->query('/ns2:VIAFCluster/ns2:nameType/text()');
           foreach ($queryResult as $node)
           {
-              $tmp = $node->textContent;
-              if ($tmp)
+              $viafType = $node->textContent;
+              if ($viafType)
               {
-                  switch($tmp)
+                  switch($viafType)
                   {
                       case "Personal":
-                          $tmp = 'cwrc:person-entityCModel';
+                          $cModel = 'cwrc:person-entityCModel';
                           $ds_id = 'PERSON';
                           $collection_pid = 'cwrc:externalEntityStub-Person';
                           $marcCodeSelector = "a";
                           break;
                       case "Corporate":
-                          $tmp = 'cwrc:organization-entityCModel';
+                          $cModel = 'cwrc:organization-entityCModel';
                           $collection_pid = 'cwrc:externalEntityStub-Organization';
                           $ds_id = 'ORGANIZATION';
                           $marcCodeSelector = "a";
                           break;
                       case "UniformTitleWork":
-                          $tmp = 'cwrc:citationCModel';
+                          $cModel = 'cwrc:citationCModel';
                           $collection_pid = 'cwrc:externalEntityStub-Title';
                           $ds_id = 'MODS';
                           $marcCodeSelector = "t";
                           break;
                       default:
-                          $tmp = 'unknown';
+                          $cModel = '';
                           break;
                   }
                   break;
@@ -592,7 +590,7 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
           $ret['LODSourceReadible'] = $this->LODSourceReadible;
           $ret['refURI'] = $refURI;
           $ret['refID'] = preg_replace("#".$this->uriPrefix."([^/]*)/?#",'${1}', $refURI);
-          $ret['cModel'] = $tmp;
+          $ret['cModel'] = $cModel;
           $ret['ds_id'] = $ds_id;
           $ret['collectionPID'] = $collection_pid;
 
@@ -621,13 +619,15 @@ class cwrc_entities_viaf extends cwrc_entities_external_handler
           $ret['recordOrigin'] = 'Entity stub derived from an entity record in the Virtual International Authority File (VIAF) database.';
 
           // check to see if a label was found, if not report
-          if ( !$ret['label'] )
+          if ( !$ret['label'] or !$ret['cModel'] )
           {
             $errStr
               = 'linked open data lookup - no error but no label: '
-              . "{\"" . $reponse . "\"] " 
+//              . "{\"" . $response . "\"} " 
               . ' ["' . $qry . '"]'
               . ' ["' . $refURI . '"]'
+//              . ' ["' . $http_status . '"]'
+              . ' ["' . $viafType . '"]'
               ;
             echo 'Curl error: ' . $errStr . "\n";
             watchdog('cwrc_entities', $errStr, array(), WATCHDOG_WARNING);
@@ -663,7 +663,7 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
         $marcCodeSelector = null;
 
         // get ID from given URI and add to a lookup API call to return XML
-        $refID = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
+        $refID = preg_replace("#".$this->uriPrefix."([^/]*)/?#",'${1}', $refURI);
         $qry = $this->qryPrefix.$refID;
 
         // use curl to lookup Linked Open Data source to retrieve and parse
@@ -729,9 +729,11 @@ class cwrc_entities_geonames extends cwrc_entities_external_handler
           {
             $errStr
               = 'linked open data lookup - no error but no label: '
-              . "{\"" . $reponse . "\"] " 
+              //. "{\"" . $response . "\"} " 
               . ' ["' . $qry . '"]'
               . ' ["' . $refURI . '"]'
+              . ' ["' . $refID . '"]'
+              . ' ["' . $http_status . '"]'
               ;
             echo 'Curl error: ' . $errStr . "\n";
             watchdog('cwrc_entities', $errStr, array(), WATCHDOG_WARNING);
@@ -766,7 +768,7 @@ class cwrc_entities_google extends cwrc_entities_external_handler
         $ret = null;
         $marcCodeSelector = null;
 
-        $addressStr = preg_replace("#".$this->uriPrefix."(.*)/?#",'${1}', $refURI);
+        $addressStr = preg_replace("#".$this->uriPrefix."([^/]*)/?#",'${1}', $refURI);
         $qry = $this->qryPrefix.$addressStr;
 
         // use curl to lookup Linked Open Data source to retrieve and parse
@@ -832,9 +834,10 @@ class cwrc_entities_google extends cwrc_entities_external_handler
           {
             $errStr
               = 'linked open data lookup - no error but no label: '
-              . "{\"" . $reponse . "\"] " 
+              //. "{\"" . $response . "\"} " 
               . ' ["' . $qry . '"]'
               . ' ["' . $refURI . '"]'
+              . ' ["' . $http_status . '"]'
               ;
             echo 'Curl error: ' . $errStr . "\n";
             watchdog('cwrc_entities', $errStr, array(), WATCHDOG_WARNING);

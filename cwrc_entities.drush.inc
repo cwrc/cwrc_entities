@@ -44,6 +44,7 @@ function drush_cwrc_entities_test()
     // Include modules.
     module_load_include('inc', 'cwrc_entities', 'includes/external_entities');
 
+    /*
     cwrc_entities_traverse_xml('
         <x ref="http://viaf.org/viaf/147166987">
         <x ref="http://www.geonames.org/6106437"></x>
@@ -51,6 +52,12 @@ function drush_cwrc_entities_test()
         <x ref="http://viaf.org/viaf/219468490/"></x>
         <x ref="https://www.google.ca/maps/place/Carmel-By-The-Sea,%20CA%2093923,%20USA"></x>
         </x>');
+     */
+
+    cwrc_entities_traverse_xml(
+      //'<x ref="http://viaf.org/viaf/174618349"></x>'
+      '<x ref="http://www.geonames.org/6148428"></x>'
+    );
 }
 
 /**
