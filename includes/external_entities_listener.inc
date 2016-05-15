@@ -30,29 +30,11 @@ class cwrc_entities_external_listener
   function cwrc_entities_external_handler($fedora_object, $msgDateTime=null)
   {
 
-    exec('/urs/bin/drush --root=/var/www/html/drupal7/sites/default/ -u 1 --uri=http://cwrc-dev-05.srv.ualberta.ca cwrc_entities_add_missing_stubs_from_pid');
-
-    /*
-    print("zzzz update object: ".$fedora_object->id."\n");
-
-    cwrc_entities_traverse_xml("<x ref='http://viaf.org/viaf/308558564'></x>");
-    print("zzzz2 update object: ".$fedora_object->id."\n");
+    // ugly kludge - otherwise have to remove Drupal functions from the 
+    // cwrc_entities include
+    exec('/usr/bin/drush --root='.$this->config->drupalPath.' -u 1 cwrc_entities_add_missing_stubs_from_pid '.$fedora_object->id.';');
     
-    // if the Feodra object has a start of 'deleted' or 'inactive'
-    // the delete the object from the XML database
-    if ( isset($fedora_object) && $fedora_object->state === 'A' )
-    {
-      // add content from datastreams
-      $tmpDom = null;
-      foreach ($fedora_object as $datastream) {
-         if  ($datastream->mimetype==='text/xml' or $datastream->mimetype==='application/xml' or $datastream->id==='RELS-EXT' )
-         {
-            //cwrc_entities_traverse_xml($datastream->content);
-         }
-      }
-    }
-     */
-
+    //exec('/usr/bin/drush --root=/var/www/html/drupal7/ -u 1 cwrc_entities_add_missing_stubs_from_pid '.$fedora_object->id.';');
 
   }
 
