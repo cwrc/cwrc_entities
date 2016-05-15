@@ -8,6 +8,35 @@
 *
 * */
 
+/**
+* Given a PID, open the FEdora object, get the contents of the XML datastreams and handle the entity references
+*
+* @param $pid
+*     The PID of the FedoraCommons object 
+*
+*/
+function cwrc_entities_handle_external_by_pid($pid) 
+{
+
+    $fedora_object = islandora_object_load($pid);
+
+    // if the Feodra object has a start of 'deleted' or 'inactive'
+    // the delete the object from the XML database
+    if ( isset($fedora_object) && $fedora_object->state === 'A' )
+    { 
+        // add content from datastreams
+        foreach ($fedora_object as $datastream) {
+            if  ($datastream->mimetype==='text/xml' or $datastream->mimetype==='application/xml')
+            {
+                //print($datastream->content);
+                cwrc_entities_traverse_xml($datastream->content);
+            }
+        }
+    } 
+    $fedora_object = null;
+}
+
+
 
 /**
 * traverse the contents of a given XML string and handle the entity references
@@ -30,7 +59,7 @@ function cwrc_entities_traverse_xml($xmlStr)
   // stub already exists queries
   $queryResult = $xpathObj->query('(//@ref | //@REF)');
   foreach($queryResult as $result){
-    cwrc_entities_handle_external_uri($result->textContent);
+    cwrc_entities_handle_external_by_uri($result->textContent);
   }
 }
 
@@ -43,7 +72,7 @@ function cwrc_entities_traverse_xml($xmlStr)
 *     external open linked data entity URI 
 *
 */
-function cwrc_entities_handle_external_uri($refURI) 
+function cwrc_entities_handle_external_by_uri($refURI) 
 {
   if (!cwrc_entities_external_exists($refURI)) 
   {

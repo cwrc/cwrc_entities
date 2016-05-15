@@ -29,6 +29,18 @@ function cwrc_entities_drush_command()
     'bootstrap' => DRUSH_BOOTSTRAP_MAX
   );
 
+
+  $items['cwrc_entities_add_missing_stubs_from_pid'] = array(
+    'description' => 'Add missing stub entities for external URIs by PID',
+    'examples' => array(
+      'drush -u 1 cwrc_entities_add_missing_stubs_from_pid PID'
+    ),
+    'arguments' => array(
+        'pid' => "FedoraCommons Object PID",
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_MAX
+  );
+
   return $items;
 }
 
@@ -60,10 +72,10 @@ function drush_cwrc_entities_test()
     );
 }
 
+
 /**
 * entities stub building code
 */
-
 function drush_cwrc_entities_add_missing_stubs()
 {
     drush_print("Add missing stub entities for external URIs");
@@ -79,6 +91,24 @@ function drush_cwrc_entities_add_missing_stubs()
     foreach ( $tmp['missingStubs'] as $uri )
     {
       print($uri."\n");
-      cwrc_entities_handle_external_uri($uri);
+      cwrc_entities_handle_external_by_uri($uri);
     }
+}
+
+/**
+* entities stub building code
+*/
+function drush_cwrc_entities_add_missing_stubs_from_pid($pid='')
+{
+    drush_print("Add missing stub entities within a given PID");
+
+    //$pid = drush_get_option('pid');
+
+    // Include modules.
+    module_load_include('inc', 'cwrc_entities', 'includes/external_entities');
+    
+    print($pid."\n");
+    cwrc_entities_handle_external_by_pid($pid);
+    print($pid."\n");
+
 }
