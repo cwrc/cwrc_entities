@@ -58,8 +58,13 @@ function cwrc_entities_traverse_xml($xmlStr)
   //ToDo: only return distinct values to limit the number of 
   // stub already exists queries
   $queryResult = $xpathObj->query('(//@ref | //@REF)');
+  $uriArray = array();
   foreach($queryResult as $result){
-    cwrc_entities_handle_external_by_uri($result->textContent);
+    $uriArray[] = $result->textContent;
+  }
+  $uriArray = array_unique($uriArray);
+  foreach($uriArray as $uri){
+    cwrc_entities_handle_external_by_uri($uri);
   }
 }
 

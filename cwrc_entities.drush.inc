@@ -88,7 +88,7 @@ function drush_cwrc_entities_add_missing_stubs()
     $tmp = islandora_cwrc_exec_xquery(ISLANDORA_EAP_EXTERNAL_MISSING_STUBS, $keyValue);
     $tmp = json_decode($tmp, TRUE);
 
-    foreach ( $tmp['missingStubs'] as $uri )
+    foreach ( array_unique($tmp['missingStubs']) as $uri )
     {
       print($uri."\n");
       cwrc_entities_handle_external_by_uri($uri);
