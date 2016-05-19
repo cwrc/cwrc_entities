@@ -252,6 +252,20 @@ function cwrc_entities_stub_exists($refURI, $LODSource)
 
 
 /**
+  * given a text string, escape XML special characters
+  * only to be used for text nodes not attributes
+  */
+function cwrc_entities_escapeText($str)
+{
+  return str_replace(
+    array('&', '<', '>')
+    , array('&amp;', '&lt;', '&gt;')
+    , $str
+  );
+}
+
+
+/**
  * an XML template to populated a Person entity
  *
  * @param typeStruct
@@ -263,6 +277,7 @@ function cwrc_entities_stub_exists($refURI, $LODSource)
 function cwrc_entities_populateTemplatePerson($typeStruct)
 {
   $today = date('Y-m-d');
+  $label = cwrc_entities_escapeText($typeStruct['label']);
   $xml = <<<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
@@ -270,7 +285,7 @@ function cwrc_entities_populateTemplatePerson($typeStruct)
     <person>
         <identity>
             <preferredForm>
-                <namePart>{$typeStruct['label']}</namePart>
+                <namePart>{$label}</namePart>
             </preferredForm>
             <sameAs>{$typeStruct['refURI']}</sameAs>
         </identity>
@@ -304,6 +319,7 @@ EOF;
 function cwrc_entities_populateTemplateOrganization($typeStruct)
 {
   $today = date('Y-m-d');
+  $label = cwrc_entities_escapeText($typeStruct['label']);
   $xml = <<<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
@@ -311,7 +327,7 @@ function cwrc_entities_populateTemplateOrganization($typeStruct)
     <organization>
         <identity>
             <preferredForm>
-                <namePart>{$typeStruct['label']}</namePart>
+                <namePart>{$label}</namePart>
             </preferredForm>
             <sameAs>{$typeStruct['refURI']}</sameAs>
         </identity>
@@ -344,6 +360,7 @@ EOF;
 function cwrc_entities_populateTemplatePlace($typeStruct)
 {
   $today = date('Y-m-d');
+  $label = cwrc_entities_escapeText($typeStruct['label']);
   $xml = <<<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="http://cwrc.ca/schemas/entities.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
@@ -351,7 +368,7 @@ function cwrc_entities_populateTemplatePlace($typeStruct)
     <place>
         <identity>
             <preferredForm>
-                <namePart>{$typeStruct['label']}</namePart>
+                <namePart>{$label}</namePart>
             </preferredForm>
             <sameAs>{$typeStruct['refURI']}</sameAs>
         </identity>
@@ -390,14 +407,16 @@ EOF;
 function cwrc_entities_populateTemplateCitation($typeStruct)
 {
   $today = date('Y-m-d');
+  $label = cwrc_entities_escapeText($typeStruct['label']);
+  $author = cwrc_entities_escapeText($typeStruct['author']);
   $xml = <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/mods.xsd">
     <titleInfo valueURI="{$typeStruct['refURI']}">
-        <title>{$typeStruct['label']}</title>
+        <title>{$label}</title>
     </titleInfo>
     <name type="personal">
-        <namePart>{$typeStruct['author']}</namePart>
+        <namePart>{$author}</namePart>
         <role>
             <roleTerm type="text" authority="marcrealtor">Author</roleTerm>
         </role>
@@ -512,6 +531,7 @@ class cwrc_entities_external_handler
       }
       return $tmp;
     }
+
 }
 
 
