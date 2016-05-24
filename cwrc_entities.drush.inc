@@ -41,7 +41,19 @@ function cwrc_entities_drush_command()
     'bootstrap' => DRUSH_BOOTSTRAP_MAX
   );
 
-  return $items;
+ 
+  $items['cwrc_entities_eap_test'] = array(
+    'description' => 'Test the Entity Aggregation Page using a give URI',
+    'examples' => array(
+      'drush -u 1 --uri=http://example.com cwrc_entities_eap_test URI'
+    ),
+    'arguments' => array(
+        'uri' => "Entity URI",
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_MAX
+  );
+
+ return $items;
 }
 
 
@@ -110,5 +122,26 @@ function drush_cwrc_entities_add_missing_stubs_from_pid($pid='')
     print($pid."\n");
     cwrc_entities_handle_external_by_pid($pid);
     print($pid."\n");
+
+}
+
+/**
+* Test the Entity Aggregation Page using a give URI 
+*/
+function drush_cwrc_entities_eap_test($uri='')
+{
+    drush_print("Build Entity Aggregation Page JSON for a given URI");
+
+    // Include modules.
+    module_load_include('inc', 'islandora_cwrc_basexdb', 'includes/xmldb_endpoints');
+    
+    print($uri."\n");
+
+    $json_results = "";
+    if ($uri) {
+      $pidKeyValue = array("ENTITY_URI" => "$uri");
+      $json_results = islandora_cwrc_exec_xquery(ISLANDORA_EAP_XQUERY_ID, $pidKeyValue);
+    }
+    print($json_results."\n");
 
 }
