@@ -238,7 +238,7 @@ Accept: application/json
 #### POST (form-data)
 | Name          | Description                                                  |
 | ------------- | ------------------------------------------------------------ |
-| data          | XML entity object as per the CWRC schema 
+| data          | XML entity object as per the CWRC schema - http://cwrc.ca/schemas/entities.rng
 
 #### Response: 201 Created
 ##### Content-Type: application/json
