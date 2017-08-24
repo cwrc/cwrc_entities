@@ -242,8 +242,9 @@ Accept: application/json
 
 #### Response: 201 Created
 ##### Content-Type: application/json
-Returns the same response as a [GET Annotation](#response-200-ok) request.
-
+```
+{"pid":"namespace:UUID"}
+```
 
 ## Update An Existing Entity 
 
@@ -264,13 +265,15 @@ Accept: application/json
 
 #### Response: 200
 ##### Content-Type: application/json
-Returns the same response as a [GET Annotation](#response-200-ok) request.
+```
+{"pid":"namespace:UUID"}
+```
 
 
-## Get An Existing Annotation
+## Get An Existing Entity
 
 #### URL syntax
-islandora/cwrc_entities/v1/{type}/{URI}
+islandora/cwrc_entities/v1/{type}/{PID}
 
 #### HTTP Method
 GET
@@ -283,15 +286,16 @@ none
 
 #### Response: 200
 ##### Content-Type: application/json
-Returns the same response as a [GET Annotation](#response-200-ok) request.
-
+```
+xml
+```
 
 
 
 ## Delete An Existing Entity 
 
 #### URL syntax
-islandora/cwrc_entities/v1/{type}/{URI}
+islandora/cwrc_entities/v1/{type}/{PID}
 
 #### HTTP Method
 DELETE
@@ -304,7 +308,6 @@ none
 
 #### Response: 200
 ##### Content-Type: application/json
-Returns the same response as a [GET Annotation](#response-200-ok) request.
 
 
 
@@ -316,7 +319,7 @@ Returns the same response as a [GET Annotation](#response-200-ok) request.
 
 
 
-### Common Responses
+# Common API Responses
 Unless otherwise specified each end-point can return the following responses.
 
 #### Response: 401 Unauthorized
