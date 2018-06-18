@@ -150,7 +150,7 @@ function cwrc_entities_menu() {
             , WorkflowConst::CATEGORY => 'created'
             , WorkflowConst::STATUS => 'c'
           )
-        , '/xslt/entity_to_dc.xsl'
+        , '/xslt/TEI_entities_to_DC.xsl'
         , $value['entity']['ds_id']
         ),
       'type' => MENU_CALLBACK,
@@ -172,7 +172,7 @@ function cwrc_entities_menu() {
             , WorkflowConst::CATEGORY => 'content_contribution'
             , WorkflowConst::STATUS => 'c'
           )
-        , '/xslt/entity_to_dc.xsl'
+        , '/xslt/TEI_entities_to_DC.xsl'
         , $value['entity']['ds_id']
         ),
     );
@@ -220,7 +220,7 @@ function cwrc_entities_menu() {
           , WorkflowConst::CATEGORY => 'created'
           , WorkflowConst::STATUS => 'c'
         )
-      , '/xslt/entity_to_dc.xsl'
+      , '/xslt/TEI_entities_to_DC.xsl'
       , CWRC_ENTITES_PERSON_DS_ID
       ),
     'type' => MENU_CALLBACK,
@@ -243,7 +243,7 @@ function cwrc_entities_menu() {
           , WorkflowConst::CATEGORY => 'content_contribution'
           , WorkflowConst::STATUS => 'c'
         )
-      , '/xslt/entity_to_dc.xsl'
+      , '/xslt/TEI_entities_to_DC.xsl'
       , CWRC_ENTITES_PERSON_DS_ID
       ),
   );
