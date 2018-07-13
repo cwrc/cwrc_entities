@@ -3,7 +3,7 @@
     xmlns:mods="http://www.loc.gov/mods/v3" xmlns:tei="http://www.tei-c.org/ns/1.0"
     exclude-result-prefixes="mods tei" xmlns:dc="http://purl.org/dc/elements/1.1/"
     xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
     <!--
   * MVI
