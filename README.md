@@ -236,9 +236,8 @@ POST
 Accept: application/json
 
 #### POST (form-data)
-| Name          | Description                                                  |
-| ------------- | ------------------------------------------------------------ |
-| data          | XML entity object as per the CWRC schema - http://cwrc.ca/schemas/entities.rng
+None: Body of the request ingested
+XML entity object as per the TEI schema - https://cwrc.ca/templates/
 
 #### Response: 201 Created
 ##### Content-Type: application/json
@@ -258,10 +257,11 @@ PUT
 #### Headers
 Accept: application/json
 
-#### POST (form-data)
-| Name          | Description                                                  |
-| ------------- | ------------------------------------------------------------ |
-| annotation    | RDF XML serialiazation of the annotation
+#### POST (form-data parameters)
+
+None: Body of the request ingested
+XML entity object as per the TEI schema - https://cwrc.ca/templates/
+
 
 #### Response: 200
 ##### Content-Type: application/json
