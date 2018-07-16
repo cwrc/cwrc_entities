@@ -168,14 +168,17 @@ function cwrc_entities_put_response(array $parameters) {
     $entityToDCXSLT = $parameters['entityToDCXSLT'];
 
     $request = $parameters['request'];
-    $content_blob = $request[CWRC_ENTITES_REQUEST_CONTENT_PARAM];
+    // content is the body of the request (no parameter e.g., $request[CWRC_ENTITES_REQUEST_CONTENT_PARAM];
+    $content_blob = $request;
 
     if (!isset($fedora_object) or !isset($fedora_object[$ds_id])) {
       drupal_add_http_header('Status', 404);
     }
+    else if (!isset($content_blob) || trim($content_blob) === '') {
+      throw new Exception("Unable to modify object {$fedora_object->id}", 510); 
+    }
     else {
 
-//throw new Exception("Unable to modify object {$fedora_object->id}", 510); 
 
       // update content datastream
       $fedora_object[$ds_id]->setContentFromString($content_blob);
@@ -237,7 +240,12 @@ function cwrc_entities_post_response(array $parameters) {
 
   $request = $parameters['request'];
 
-  $content_blob = $request[CWRC_ENTITES_REQUEST_CONTENT_PARAM];
+  // content is the body of the request (no parameter e.g., $request[CWRC_ENTITES_REQUEST_CONTENT_PARAM];
+  $content_blob = $request;
+
+  if (!isset($content_blob) || trim($content_blob) === '') {
+    throw new Exception("Unable to add request content empty", 510); 
+  }
 
   $hasTarget = ((isset($request['hasTarget'])) ? $request['hasTarget'] : NULL);
 
