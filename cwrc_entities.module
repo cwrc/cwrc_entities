@@ -296,6 +296,15 @@ function cwrc_entities_menu() {
   );
 
 
+  $items['admin/islandora/cwrc_entities_collections'] = array(
+    'title' => 'Entity Collections',
+    'description' => 'Configure settings Entity Collections',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cwrc_entities_admin_form'),
+    'access arguments' => array('administer site configuration'),
+  );
+  
+  
   return $items;
 }
 
@@ -325,4 +334,47 @@ function cwrc_entities_permission() {
 }
 
 
+/**
+ *  Implements hook_form().
+ */
+function cwrc_entities_admin_form($form, &$form_state) {
 
+	$form = array();
+	$form['collection_container'] = array(
+		'#type' => 'container',
+		
+	);
+	
+	$form['collection_container']['allowed_entity_collections'] = array(
+		'#id' => 'entity_collection_autocomplete',
+		'#type' => 'textfield',
+		'#maxlength' => 180,
+		'#attributes' => array(
+			'class' => array(
+				'autocomplete'),
+			),
+		'#title' => 'Allowed Entity Collections',
+		'#autocomplete_path' => 'islandora_object_field/autocomplete',
+		'#ajax["event"]' => 'blur',
+		'#default_value' => '',
+	);
+	// Add the javascript.
+  if (function_exists('drupal_get_path')) {
+    $form['#attached'] = array(
+		'library' => array(
+		  array('system', 'ui.dialog'),
+		),
+		'js' => array(
+		  drupal_add_js('misc/autocomplete.js'),
+		),
+	);
+  }
+  
+	  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Change'),
+  );
+  
+  return $form;
+	
+}

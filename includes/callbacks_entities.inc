@@ -55,12 +55,12 @@ function cwrc_entities_rest_api(
   {
  
   // include REST utilities for the API callbacks 
-  module_load_include('inc', 'islandora_rest', "includes/utilities");
-
+  module_load_include('inc', 'islandora_rest', "includes/utilities"); 
   $endpoint = 'object';
 
   //$url_parameters = array_filter($url_parameters);
   $request_method = islandora_rest_get_request_method();
+
   //$pid = !empty($url_parameters['pid']) ? $url_parameters['pid'] : FALSE;
   //if ( $pid===FALSE ) {
   //  $pid = islandora_markup_editor_oa_convert_uri_to_pid($uri);
@@ -91,7 +91,7 @@ function cwrc_entities_rest_api(
         , 'entityToDCXSLT' => $entityToDCXSLT
         , 'dataStreamID' => $dataStreamID
       );
-
+dpm($parameters, 'paras');
 
       // Can throw 400, 401, 500, etc.
       $response = $response_function($parameters);
@@ -104,6 +104,7 @@ function cwrc_entities_rest_api(
     //$response =  drupal_json_encode(array('error' => $e->getMessage()));
     $response =  drupal_json_encode(array('message' => $e->getMessage()));
   }
+
   $encode = is_array($response) || is_object($response);
   if ($encode) {
     // Reponses that don't generate objects or arrays, must set their own
@@ -238,8 +239,15 @@ function cwrc_entities_post_response(array $parameters) {
   $activity_params = $parameters['activity'];
   $entityToDCXSLT = $parameters['entityToDCXSLT'];
 
-  $request = $parameters['request'];
+// The TEI xml is the second element in the request, unless keys are added to the request array.
 
+ $request = $parameters['request']['tei'];
+ 
+// The Collection PID is the first parameter.  $collectionPID = $parameters['request']['collectionPID'];
+
+  $collectionPID = $parameters['request']['collectionPID'];
+  
+//watchdog('bradmodule', '<pre>Dumping @variable </pre>', array('@variable' => print_r($request, true)));
   // content is the body of the request (no parameter e.g., $request[CWRC_ENTITES_REQUEST_CONTENT_PARAM];
   $content_blob = $request;
 
@@ -316,6 +324,7 @@ function cwrc_entities_post_response(array $parameters) {
     $fedora_object->label = $title;
   }
 
+  $content_blob = tei_add_responsibilities($content_blob, $pid);
 
   // create content datastream
   $content_ds 
@@ -631,3 +640,78 @@ function cwrc_entities_search($cModel, $solr_field_array)
 }
 
 
+
+/**
+ * Initializes DOMDocument and XPath objects,
+ * and packs them into an array for various modifications.
+ */ 
+function init_dom_mod($content_blob) {
+  $dom = new DOMDocument();
+  @$dom->loadXML($content_blob);
+
+  $xpath = new DOMXPath($dom);
+  $ns = $dom->documentElement->namespaceURI;
+
+  $xpath->registerNamespace("ns", $ns);
+	
+  $contentDOM = array[
+  'xpath' => $xpath,
+  'dom' = => $dom,
+  ];
+  return $contentDOM;
+}
+
+function close_dom_mod($contentDOM) {
+	
+	return $contentDOM['dom']->saveXML();
+}
+
+
+/*
+ * Adds <respons> tags to TEI datastreams.
+ */
+function tei_add_responsibilities($content_blob, $pid) {
+  global $user;
+  $input_doc = new DOMDocument();
+  @$input_doc->loadXML($content_blob);
+
+  $xpath = new DOMXPath($input_doc);
+  $ns = $input_doc->documentElement->namespaceURI;
+
+  $xpath->registerNamespace("ns", $ns);
+  watchdog('orig blob', '<pre>Dumping @variable </pre>', array('@variable' => print_r($content_blob, true)));
+  $responsString = '<respons locus="value">
+<desc>
+<date type="created" source="https://www.w3.org/TR/NOTE-datetime" when="' . date('Y-m-d') . '"/>
+<persName ref="http://dev-02.cwrc.ca/users/' . $user->uid . '">' . realname_load($user) . '</persName>
+</desc>
+</respons>';
+
+  $responsNode = new DOMDocument();
+  @$responsNode->loadXML($responsString);
+
+  $injectThis = $responsNode->getElementsByTagName('respons')->item(0);
+
+  $personNode = $xpath->evaluate('/ns:TEI/ns:text/ns:body/ns:listPerson/ns:person');
+  $personNode = $personNode->item(0);
+
+  $personNode->setAttribute('xml:id', 'commons.cwrc.ca/' . $pid);
+  $personNode->appendChild($input_doc->importNode($injectThis, TRUE));
+
+  $tei_string = $input_doc->saveXML();
+  watchdog('finisehd string', '<pre>Dumping @variable </pre>', array('@variable' => print_r($tei_string, true)));
+  return $tei_string;
+}
+
+
+/*
+ * Adds <respons> tags to TEI datastreams.
+ */
+function tei_add_xmlid($contentDOM, $pid) {
+  
+	
+	
+}
+
+
+  global $user;
