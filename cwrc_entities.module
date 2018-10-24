@@ -353,7 +353,7 @@ function cwrc_entities_menu() {
     'title' => 'Gets entity collections defined at /admin/islandora/cwrc_entities_collections',
     'page callback' => 'cwrc_entities_get_entity_collections',
     'type' => MENU_CALLBACK,
-    'access arguments' => ['access content overview'],
+    'access arguments' => ['view entity'],
   ];
 
 
