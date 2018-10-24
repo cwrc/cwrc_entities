@@ -95,7 +95,7 @@ function cwrc_entities_oa_mintURI($optional_UUID = null) {
   // URI cwrc.ca/oa/namespace:UUID
   
   // ToDo: should change to be the same namespace as the target
-  $namespace = "cwrc"; 
+  $namespace = "cwrc";
   $prefix = "http://id.cwrc.ca/";
 
 

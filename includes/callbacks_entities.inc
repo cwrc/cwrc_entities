@@ -12,8 +12,6 @@ define("CWRC_ENTITIES_CMODEL",   "cwrc:openAnnotationCModel");
 define("CWRC_ENTITIES_HASTARGET", "cwrc:hasTarget");
 define("CWRC_ENTITIES_NS", 'http://cwrc.ca/ns/relsext#');
 
-
-
 /**
  * Menu callback to handle the REST methods to handle an Entity .
  *
@@ -53,7 +51,7 @@ function cwrc_entities_rest_api(
   , $dataStreamID = NULL
   ) 
   {
- 
+
   // include REST utilities for the API callbacks 
   module_load_include('inc', 'islandora_rest', "includes/utilities"); 
   $endpoint = 'object';
@@ -164,7 +162,9 @@ function cwrc_entities_put_response(array $parameters) {
 
   try {
     $fedora_object = $parameters['resource'];
+    
     $ds_id = $parameters['dataStreamID'];
+      $cModel = $parameters['cModel'];
     $activity_params = $parameters['activity'];
     $entityToDCXSLT = $parameters['entityToDCXSLT'];
 
@@ -180,7 +180,16 @@ function cwrc_entities_put_response(array $parameters) {
     }
     else {
 
-
+    // Initialize the content_blob within DOMDocument and Xpath libs so we can modify the tags.
+	  $contentDOM = init_dom_mod($content_blob);
+    
+    // Get the existing Datastreams responsibility tags 
+    $contentDOM = tei_get_previous_responsibilities($contentDOM, $fedora_object, $cModel);
+    
+	  $contentDOM = tei_add_responsibilities($contentDOM, $cModel, 'modified');
+      $contentDOM = tei_add_xmlid($contentDOM, $pid, $cModel);
+	  $content_blob = close_dom_mod($contentDOM);
+ 
       // update content datastream
       $fedora_object[$ds_id]->setContentFromString($content_blob);
 
@@ -230,7 +239,6 @@ function cwrc_entities_put_response(array $parameters) {
  *   Returns the same response as a GET request to the existing object.
  */
 function cwrc_entities_post_response(array $parameters) {
-  
   module_load_include('inc', 'islandora', 'includes/utilities');
 
   $ds_id = $parameters['dataStreamID'];
@@ -247,8 +255,7 @@ function cwrc_entities_post_response(array $parameters) {
 
   $collectionPID = $parameters['request']['collectionPID'];
   
-//watchdog('bradmodule', '<pre>Dumping @variable </pre>', array('@variable' => print_r($request, true)));
-  // content is the body of the request (no parameter e.g., $request[CWRC_ENTITES_REQUEST_CONTENT_PARAM];
+
   $content_blob = $request;
 
   if (!isset($content_blob) || trim($content_blob) === '') {
@@ -264,9 +271,11 @@ function cwrc_entities_post_response(array $parameters) {
 
   if (!isset($pid) or $pid == FALSE)
   {
+    // Get the namespace of the parent Collection
+    $namespace_prefix = explode(':', $collectionPID)[0];
     // generate an id for the object
     $connection = islandora_get_tuque_connection();
-    $pid = $connection->repository->getnextIdentifier("cwrc", TRUE);
+    $pid = $connection->repository->getnextIdentifier($namespace_prefix, TRUE);
   }
 
   // prepare a new object.
@@ -282,7 +291,6 @@ function cwrc_entities_post_response(array $parameters) {
           , 'pid' => "$collectionPID"
         )
     );
-
 
   // add the new object as a child of a specific collection
   if (isset($collectionPID))
@@ -324,7 +332,12 @@ function cwrc_entities_post_response(array $parameters) {
     $fedora_object->label = $title;
   }
 
-  $content_blob = tei_add_responsibilities($content_blob, $pid);
+
+  $contentDOM = init_dom_mod($content_blob);
+  $contentDOM = tei_add_responsibilities($contentDOM, $cModel, 'created') ;
+  $contentDOM = tei_add_xmlid($contentDOM, $pid, $cModel);
+  $content_blob = close_dom_mod($contentDOM);
+  
 
   // create content datastream
   $content_ds 
@@ -642,6 +655,22 @@ function cwrc_entities_search($cModel, $solr_field_array)
 
 
 /**
+ *
+ */
+function cmodel_to_TEI_type_constant($cmodel) {
+	switch ($cmodel) {
+		case 'cwrc:person-entityCModel':
+			return 'Person';
+		case 'cwrc:place-entityCModel':
+			return 'Place';
+		case 'cwrc:organization-entityCModel':
+			return 'Org';
+		default:
+			return NULL;
+	}
+}
+
+/**
  * Initializes DOMDocument and XPath objects,
  * and packs them into an array for various modifications.
  */ 
@@ -654,9 +683,9 @@ function init_dom_mod($content_blob) {
 
   $xpath->registerNamespace("ns", $ns);
 	
-  $contentDOM = array[
+  $contentDOM = [
   'xpath' => $xpath,
-  'dom' = => $dom,
+  'dom' => $dom,
   ];
   return $contentDOM;
 }
@@ -667,51 +696,120 @@ function close_dom_mod($contentDOM) {
 }
 
 
+
+
+
+/*
+ * Grabs previous responsibilities tags 
+ */
+function tei_get_previous_responsibilities($contentDOM, $object, $cModel){
+  
+  // This converts the cmodel machine name to person, place, or org.
+  $teiType = cmodel_to_TEI_type_constant($cModel);
+  
+  $dsid = strtoupper($teiType);
+  $tei = islandora_datastream_load($dsid, $object);
+  $content = $tei->getContent();
+  
+  // Old Responsibility Tags
+  $oldRes = new DOMDocument();
+  @$oldRes->loadXML($content);
+
+  // We created a DOMDocument, now lets make an XPath.
+  $oldResXpath = new DOMXPath($oldRes);
+  $ns = $oldRes->documentElement->namespaceURI;
+
+  $oldResXpath->registerNamespace("ns", $ns);
+  
+     /* For Organizations and Places, the respons tag is inside a Note tag.  */
+  if( $cModel == 'cwrc:place-entityCModel' || $cModel == 'cwrc:organization-entityCModel')
+  {
+    // So we can pull out the old Respons and <note> tags.
+    $tei_entity_xpath = '/ns:TEI/ns:text/ns:body/ns:list' . $teiType . '/ns:' . strtolower($teiType) . '/ns:note';
+    $oldResList = $oldResXpath->evaluate($tei_entity_xpath);
+  } else {
+    // So we can pull out the old Respons and <note> tags.
+    $tei_entity_xpath = '/ns:TEI/ns:text/ns:body/ns:list' . $teiType . '/ns:' . strtolower($teiType) . '/ns:respons';
+    $oldResList = $oldResXpath->evaluate($tei_entity_xpath);
+  }
+  
+  $tei_entity_xpath = '/ns:TEI/ns:text/ns:body/ns:list' . cmodel_to_TEI_type_constant($cModel) . '/ns:' . strtolower(cmodel_to_TEI_type_constant($cModel));
+ 
+  $targetNode = $contentDOM['xpath']->evaluate($tei_entity_xpath);   
+  foreach( $oldResList as $key => $resTag ) {
+    $targetNode->item(0)->appendChild($contentDOM['dom']->importNode($resTag, TRUE));
+  }
+  
+   
+
+  //$contentDOM['dom']->importNode($oldResList->item(0));
+  return $contentDOM;
+}
+  
+  
+  
+  
 /*
  * Adds <respons> tags to TEI datastreams.
  */
-function tei_add_responsibilities($content_blob, $pid) {
+function tei_add_responsibilities($contentDOM, $cModel, $respType) {
   global $user;
-  $input_doc = new DOMDocument();
-  @$input_doc->loadXML($content_blob);
+  
+  global $base_url;   // Will point to http://www.example.com
+  global $base_path;  // Will point to at least "/" or the subdirectory where the drupal in installed.
+  $user_link = $base_url . $base_path . 'users/' . $user->uid;
 
-  $xpath = new DOMXPath($input_doc);
-  $ns = $input_doc->documentElement->namespaceURI;
 
-  $xpath->registerNamespace("ns", $ns);
-  watchdog('orig blob', '<pre>Dumping @variable </pre>', array('@variable' => print_r($content_blob, true)));
   $responsString = '<respons locus="value">
 <desc>
-<date type="created" source="https://www.w3.org/TR/NOTE-datetime" when="' . date('Y-m-d') . '"/>
-<persName ref="http://dev-02.cwrc.ca/users/' . $user->uid . '">' . realname_load($user) . '</persName>
+<date type="' . $respType . '" source="https://www.w3.org/TR/NOTE-datetime" when="' . date('Y-m-d') . '"/>
+<persName ref="' . $user_link .  '">' . realname_load($user) . '</persName>
 </desc>
 </respons>';
 
+  /* For Organizations and Places, the respons tag is inside a Note tag.  */
+  if( $cModel == 'cwrc:place-entityCModel' || $cModel == 'cwrc:organization-entityCModel')
+  {
+	  $responsString = '<note type="resp_statement">
+	  ' . $responsString . '
+	  </note>';
+	  watchdog('braorg and placedmodule', '<pre>Dumping @variable </pre>', array('@variable' => print_r($responsString, true)));
+  }
+
   $responsNode = new DOMDocument();
   @$responsNode->loadXML($responsString);
-
-  $injectThis = $responsNode->getElementsByTagName('respons')->item(0);
-
-  $personNode = $xpath->evaluate('/ns:TEI/ns:text/ns:body/ns:listPerson/ns:person');
+  
+    /* For Organizations and Places, the respons tag is inside a Note tag.  */
+  if( $cModel == 'cwrc:place-entityCModel' || $cModel == 'cwrc:organization-entityCModel')
+  {
+    $injectThis = $responsNode->getElementsByTagName('note')->item(0);
+  } else {
+    $injectThis = $responsNode->getElementsByTagName('respons')->item(0);
+  }
+ 
+  $tei_entity_xpath = '/ns:TEI/ns:text/ns:body/ns:list' . cmodel_to_TEI_type_constant($cModel) . '/ns:' . strtolower(cmodel_to_TEI_type_constant($cModel));
+  $personNode = $contentDOM['xpath']->evaluate($tei_entity_xpath);
   $personNode = $personNode->item(0);
+  $personNode->appendChild($contentDOM['dom']->importNode($injectThis, TRUE));
 
-  $personNode->setAttribute('xml:id', 'commons.cwrc.ca/' . $pid);
-  $personNode->appendChild($input_doc->importNode($injectThis, TRUE));
-
-  $tei_string = $input_doc->saveXML();
-  watchdog('finisehd string', '<pre>Dumping @variable </pre>', array('@variable' => print_r($tei_string, true)));
-  return $tei_string;
+  return $contentDOM;
 }
 
 
 /*
  * Adds <respons> tags to TEI datastreams.
  */
-function tei_add_xmlid($contentDOM, $pid) {
+function tei_add_xmlid($contentDOM, $pid, $cModel) {
   
-	
-	
+  $tei_entity_xpath = '/ns:TEI/ns:text/ns:body/ns:list' . cmodel_to_TEI_type_constant($cModel) . '/ns:' . strtolower(cmodel_to_TEI_type_constant($cModel));
+  
+  
+  $personNode = $contentDOM['xpath']->evaluate($tei_entity_xpath);
+  $personNode = $personNode->item(0);
+
+  $personNode->setAttribute('xml:id', 'commons.cwrc.ca/' . $pid);
+
+  return $contentDOM;
 }
 
 
-  global $user;

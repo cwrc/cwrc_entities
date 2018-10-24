@@ -156,7 +156,6 @@ function cwrc_entities_menu() {
     ],
   ];
 
-
   foreach ($config as $key => $value) {
 
     // search
@@ -216,7 +215,7 @@ function cwrc_entities_menu() {
       'page arguments' => [
         4
         ,
-        NULL
+        $value['entity']['cModel']
         ,
         NULL
         ,
@@ -350,8 +349,8 @@ function cwrc_entities_menu() {
     'access arguments' => [CWRC_OPEN_ANNOTATION_CREATE],
   ];
 
-  $items['islandora/bcol'] = [
-    'title' => 'Autocomplete Collection Search for Users',
+  $items['islandora/get_entity_collections'] = [
+    'title' => 'Gets entity collections defined at /admin/islandora/cwrc_entities_collections',
     'page callback' => 'cwrc_entities_get_entity_collections',
     'type' => MENU_CALLBACK,
     'access arguments' => ['access content overview'],
@@ -483,15 +482,17 @@ function cwrc_entities_form_alter(&$form, &$form_state, $form_id) {
 
   if ($form_id == 'islandora_ingest_form' && !isset($form['models'])) {
     if (isset($form_state['islandora']['shared_storage']['models'][0])) {
+		$collectionId = $form_state['build_info']['args'][0]['parent'];
+		$collectionId = array('query' => array('collectionId' => $collectionId));
       switch ($form_state['islandora']['shared_storage']['models'][0]) {
         case 'cwrc:person-entityCModel':
-          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/person');
+          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/person', $collectionId);
           break;
         case 'cwrc:place-entityCModel':
-          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/place');
+          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/place', $collectionId);
           break;
         case 'cwrc:organization-entityCModel':
-          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/organization');
+          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/organization', $collectionId);
           break;
 
         default:
