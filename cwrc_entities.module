@@ -26,7 +26,7 @@ define('CWRC_ENTITES_API', 'islandora/cwrc_entities/v1');
 define('CWRC_ENTITES_API_PLACE', CWRC_ENTITES_API . '/place');
 define('CWRC_ENTITES_API_PLACE_SEARCH', CWRC_ENTITES_API . '/search/place');
 define('CWRC_ENTITES_API_PERSON', CWRC_ENTITES_API . '/person');
-define('CWRC_ENTITES_API_PERSON_SEARCH', CWRC_ENTITES_API. '/search/person');
+define('CWRC_ENTITES_API_PERSON_SEARCH', CWRC_ENTITES_API . '/search/person');
 define('CWRC_ENTITES_API_ORGANIZATION', CWRC_ENTITES_API . '/organization');
 define('CWRC_ENTITES_API_ORGANIZATION_SEARCH', CWRC_ENTITES_API . '/search/organization');
 define('CWRC_ENTITES_API_TITLE', CWRC_ENTITES_API . '/title');
@@ -41,146 +41,200 @@ define('CWRC_ENTITES_TITLE_DS_ID', 'MODS');
 define('CWRC_ENTITES_REQUEST_CONTENT_PARAM', 'data');
 
 
-
 /**
  * Implements hook_menu().
  */
 function cwrc_entities_menu() {
 
-  module_load_include('inc', 'islandora_workflow_rest', 'includes/basic_enum'); 
+  module_load_include('inc', 'islandora_workflow_rest', 'includes/basic_enum');
 
   // TODO: add infor to configuration page
-  $config = array(
-    'person' => array(
-        'search' => array(
-            'route' => CWRC_ENTITES_API_PERSON_SEARCH
-            , 'title' => 'Person Entity Search'
-            , 'cModel' => 'info:fedora/cwrc:person-entityCModel'
-            , 'fields' => array('cwrc_entity_person_preferredForm_et','cwrc_entity_person_variantForm_et')
-        )
-        , 
-        'entity' => array(
-            'route' => CWRC_ENTITES_API_PERSON 
-            , 'title' => 'Person Entity REST API'
-            , 'cModel' => 'cwrc:person-entityCModel'
-            , 'collectionPID' => 'cwrc:d3c004f1-2b3f-4e51-a679-4f1c0da4fe17'
-            , 'ds_id' => CWRC_ENTITES_PERSON_DS_ID 
-          )
-      ),
-    'organization' => array(
-        'search' => array(
-            'route' => CWRC_ENTITES_API_ORGANIZATION_SEARCH
-            , 'title' => 'Organization Entity Search'
-            , 'cModel' => 'info:fedora/cwrc:organization-entityCModel'
-            , 'fields' => array('cwrc_entity_org_preferredForm_et','cwrc_entity_org_variantForm_et')
-        )
+  $config = [
+    'person' => [
+      'search' => [
+        'route' => CWRC_ENTITES_API_PERSON_SEARCH
         ,
-        'entity' => array(
-            'route' => CWRC_ENTITES_API_ORGANIZATION 
-            , 'title' => 'Organization Entity REST API'
-            , 'cModel' => 'cwrc:organization-entityCModel'
-            , 'collectionPID' => 'cwrc:65c257ec-446c-479c-8695-6c015788413b'
-            , 'ds_id' => CWRC_ENTITES_ORGANIZATION_DS_ID 
-          )
-      ),
-    'place' => array(
-        'search' => array(
-            'route' => CWRC_ENTITES_API_PLACE_SEARCH
-            , 'title' => 'Place Entity Search'
-            , 'cModel' => 'info:fedora/cwrc:place-entityCModel'
-            , 'fields' => array('cwrc_entity_place_preferredForm_et','cwrc_entity_place_variantForm_et')
-        )
+        'title' => 'Person Entity Search'
         ,
-        'entity' => array(
-            'route' => CWRC_ENTITES_API_PLACE 
-            , 'title' => 'Place Entity REST API'
-            , 'cModel' => 'cwrc:place-entityCModel'
-            , 'collectionPID' => 'cwrc:20d46869-20a0-4d19-9ef6-1aacb3a1fba8'
-            , 'ds_id' => CWRC_ENTITES_PLACE_DS_ID 
-          )
-      ),
-    'title' => array(
-        'search' => array(
-            'route' => CWRC_ENTITES_API_TITLE_SEARCH
-            , 'title' => 'Title Entity Search'
-            , 'cModel' => 'info:fedora/cwrc:citationCModel'
-            , 'fields' => array('cwrc_entity_title_uniformTitle_et','cwrc_entity_title_variantTitle_et')
-        )
+        'cModel' => 'info:fedora/cwrc:person-entityCModel'
         ,
-        'entity' => array(
-            'route' => CWRC_ENTITES_API_TITLE 
-            , 'title' => 'Title Entity REST API'
-            , 'cModel' => 'cwrc:citationCModel'
-            , 'collectionPID' => 'cwrc:bc53ab0d-3138-4791-a32a-5579fd067552'
-            , 'ds_id' => CWRC_ENTITES_TITLE_DS_ID 
-          )
-      )
-  );
+        'fields' => [
+          'cwrc_entity_person_preferredForm_et',
+          'cwrc_entity_person_variantForm_et',
+        ],
+      ]
+      ,
+      'entity' => [
+        'route' => CWRC_ENTITES_API_PERSON
+        ,
+        'title' => 'Person Entity REST API'
+        ,
+        'cModel' => 'cwrc:person-entityCModel'
+        ,
+        'collectionPID' => 'cwrc:d3c004f1-2b3f-4e51-a679-4f1c0da4fe17'
+        ,
+        'ds_id' => CWRC_ENTITES_PERSON_DS_ID,
+      ],
+    ],
+    'organization' => [
+      'search' => [
+        'route' => CWRC_ENTITES_API_ORGANIZATION_SEARCH
+        ,
+        'title' => 'Organization Entity Search'
+        ,
+        'cModel' => 'info:fedora/cwrc:organization-entityCModel'
+        ,
+        'fields' => [
+          'cwrc_entity_org_preferredForm_et',
+          'cwrc_entity_org_variantForm_et',
+        ],
+      ]
+      ,
+      'entity' => [
+        'route' => CWRC_ENTITES_API_ORGANIZATION
+        ,
+        'title' => 'Organization Entity REST API'
+        ,
+        'cModel' => 'cwrc:organization-entityCModel'
+        ,
+        'collectionPID' => 'cwrc:65c257ec-446c-479c-8695-6c015788413b'
+        ,
+        'ds_id' => CWRC_ENTITES_ORGANIZATION_DS_ID,
+      ],
+    ],
+    'place' => [
+      'search' => [
+        'route' => CWRC_ENTITES_API_PLACE_SEARCH
+        ,
+        'title' => 'Place Entity Search'
+        ,
+        'cModel' => 'info:fedora/cwrc:place-entityCModel'
+        ,
+        'fields' => [
+          'cwrc_entity_place_preferredForm_et',
+          'cwrc_entity_place_variantForm_et',
+        ],
+      ]
+      ,
+      'entity' => [
+        'route' => CWRC_ENTITES_API_PLACE
+        ,
+        'title' => 'Place Entity REST API'
+        ,
+        'cModel' => 'cwrc:place-entityCModel'
+        ,
+        'collectionPID' => 'cwrc:20d46869-20a0-4d19-9ef6-1aacb3a1fba8'
+        ,
+        'ds_id' => CWRC_ENTITES_PLACE_DS_ID,
+      ],
+    ],
+    'title' => [
+      'search' => [
+        'route' => CWRC_ENTITES_API_TITLE_SEARCH
+        ,
+        'title' => 'Title Entity Search'
+        ,
+        'cModel' => 'info:fedora/cwrc:citationCModel'
+        ,
+        'fields' => [
+          'cwrc_entity_title_uniformTitle_et',
+          'cwrc_entity_title_variantTitle_et',
+        ],
+      ]
+      ,
+      'entity' => [
+        'route' => CWRC_ENTITES_API_TITLE
+        ,
+        'title' => 'Title Entity REST API'
+        ,
+        'cModel' => 'cwrc:citationCModel'
+        ,
+        'collectionPID' => 'cwrc:bc53ab0d-3138-4791-a32a-5579fd067552'
+        ,
+        'ds_id' => CWRC_ENTITES_TITLE_DS_ID,
+      ],
+    ],
+  ];
 
-
-  foreach ($config as $key => $value)
-  {
+  foreach ($config as $key => $value) {
 
     // search
-    $items[ $value['search']['route'] ] = array(
+    $items[$value['search']['route']] = [
       'title' => $value['search']['title']
-      , 'page callback' => 'cwrc_entities_search'
-      , 'page arguments' => array(
+      ,
+      'page callback' => 'cwrc_entities_search'
+      ,
+      'page arguments' => [
         $value['search']['cModel']
-        , $value['search']['fields']
-        )
-      , 'type' => MENU_CALLBACK
-      , 'file' => 'includes/callbacks_entities.inc'
-      , 'access arguments' => array(CWRC_ENTITY_VIEW)
-    );
+        ,
+        $value['search']['fields'],
+      ]
+      ,
+      'type' => MENU_CALLBACK
+      ,
+      'file' => 'includes/callbacks_entities.inc'
+      ,
+      'access arguments' => [CWRC_ENTITY_VIEW],
+    ];
 
     // Entity create
-    $items[ $value['entity']['route'] ] = array(
+    $items[$value['entity']['route']] = [
       'title' => $value['entity']['title'],
       'type' => MENU_CALLBACK,
       'file' => 'includes/callbacks_entities.inc',
-      'access arguments' => array(CWRC_ENTITY_VIEW),
+      'access arguments' => [CWRC_ENTITY_VIEW],
       'page callback' => 'cwrc_entities_rest_api',
-      'page arguments' => array(
+      'page arguments' => [
         NULL
-        , $value['entity']['cModel']
-        , $value['entity']['collectionPID']
-        , array(
-            WorkflowConst::STAMP => 'cwrc:cre'
-            , WorkflowConst::CATEGORY => 'created'
-            , WorkflowConst::STATUS => 'c'
-          )
-        , '/xslt/entity_to_dc_TEI_support.xsl'
-        , $value['entity']['ds_id']
-        ),
-      'type' => MENU_CALLBACK,
-    );
+        ,
+        $value['entity']['cModel']
+        ,
+        $value['entity']['collectionPID']
+        ,
+        [
+          WorkflowConst::STAMP => 'cwrc:cre'
+          ,
+          WorkflowConst::CATEGORY => 'created'
+          ,
+          WorkflowConst::STATUS => 'c',
+        ]
+        ,
+        '/xslt/entity_to_dc_TEI_support.xsl'
+        ,
+        $value['entity']['ds_id'],
+      ],
+    ];
 
     // Entity retrieve update view
-    $items[ $value['entity']['route'] . '/%'] = array(
+    $items[$value['entity']['route'] . '/%'] = [
       'title' => $value['entity']['title'],
       'type' => MENU_CALLBACK,
       'file' => 'includes/callbacks_entities.inc',
-      'access arguments' => array(CWRC_ENTITY_VIEW),
+      'access arguments' => [CWRC_ENTITY_VIEW],
       'page callback' => 'cwrc_entities_rest_api',
-      'page arguments' => array(
+      'page arguments' => [
         4
-        , NULL
-        , NULL
-        , array(
-            WorkflowConst::STAMP => 'cwrc:evr'
-            , WorkflowConst::CATEGORY => 'content_contribution'
-            , WorkflowConst::STATUS => 'c'
-          )
-        , '/xslt/entity_to_dc_TEI_support.xsl'
-        , $value['entity']['ds_id']
-        ),
-    );
-
+        ,
+        $value['entity']['cModel']
+        ,
+        NULL
+        ,
+        [
+          WorkflowConst::STAMP => 'cwrc:evr'
+          ,
+          WorkflowConst::CATEGORY => 'content_contribution'
+          ,
+          WorkflowConst::STATUS => 'c',
+        ]
+        ,
+        '/xslt/entity_to_dc_TEI_support.xsl'
+        ,
+        $value['entity']['ds_id'],
+      ],
+    ];
 
 
   }
-
 
 
   // ===== ENTITIES
@@ -201,99 +255,115 @@ function cwrc_entities_menu() {
 */
 
 
-/*
-  // PERSON Entity
-  //$items[ISLANDORA_CWRC_ENTITES_API_PERSON] = array(
-  //$items['islandora/cwrc_entities/entity/person'] = array(
-  $items[CWRC_ENTITES_API_PERSON] = array(
-    'title' => 'Person Entity REST Creation',
-    'type' => MENU_CALLBACK,
-    'file' => 'includes/callbacks_entities.inc',
-    'access arguments' => array(CWRC_ENTITY_VIEW),
-    'page callback' => 'cwrc_entities_rest_api',
-    'page arguments' => array(
-      NULL
-      , 'cwrc:person-entityCModel'
-      , 'cwrc:d3c004f1-2b3f-4e51-a679-4f1c0da4fe17'
-      , array(
-          WorkflowConst::STAMP => 'cwrc:cre'
-          , WorkflowConst::CATEGORY => 'created'
-          , WorkflowConst::STATUS => 'c'
-        )
-      , '/xslt/entity_to_dc_TEI_support.xsl'
-      , CWRC_ENTITES_PERSON_DS_ID
-      ),
-    'type' => MENU_CALLBACK,
-  );
+  /*
+    // PERSON Entity
+    //$items[ISLANDORA_CWRC_ENTITES_API_PERSON] = array(
+    //$items['islandora/cwrc_entities/entity/person'] = array(
+    $items[CWRC_ENTITES_API_PERSON] = array(
+      'title' => 'Person Entity REST Creation',
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/callbacks_entities.inc',
+      'access arguments' => array(CWRC_ENTITY_VIEW),
+      'page callback' => 'cwrc_entities_rest_api',
+      'page arguments' => array(
+        NULL
+        , 'cwrc:person-entityCModel'
+        , 'cwrc:d3c004f1-2b3f-4e51-a679-4f1c0da4fe17'
+        , array(
+            WorkflowConst::STAMP => 'cwrc:cre'
+            , WorkflowConst::CATEGORY => 'created'
+            , WorkflowConst::STATUS => 'c'
+          )
+        , '/xslt/entity_to_dc_TEI_support.xsl'
+        , CWRC_ENTITES_PERSON_DS_ID
+        ),
+      'type' => MENU_CALLBACK,
+    );
 
- //$items[ISLANDORA_CWRC_ENTITES_API_PERSON . '%'] = array(
-//  $items['islandora/cwrc_entities/entity/person/%'] = array(
-  $items[CWRC_ENTITES_API_PERSON . '/%'] = array(
-    'title' => 'Person Entity REST endpoint',
-    'type' => MENU_CALLBACK,
-    'file' => 'includes/callbacks_entities.inc',
-    'access arguments' => array(CWRC_ENTITY_VIEW),
-    'page callback' => 'cwrc_entities_rest_api',
-    'page arguments' => array(
-      3
-      , NULL
-      , NULL
-      , array(
-          WorkflowConst::STAMP => 'cwrc:evr'
-          , WorkflowConst::CATEGORY => 'content_contribution'
-          , WorkflowConst::STATUS => 'c'
-        )
-      , '/xslt/entity_to_dc_TEI_support.xsl'
-      , CWRC_ENTITES_PERSON_DS_ID
-      ),
-  );
-*/
+   //$items[ISLANDORA_CWRC_ENTITES_API_PERSON . '%'] = array(
+  //  $items['islandora/cwrc_entities/entity/person/%'] = array(
+    $items[CWRC_ENTITES_API_PERSON . '/%'] = array(
+      'title' => 'Person Entity REST endpoint',
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/callbacks_entities.inc',
+      'access arguments' => array(CWRC_ENTITY_VIEW),
+      'page callback' => 'cwrc_entities_rest_api',
+      'page arguments' => array(
+        3
+        , NULL
+        , NULL
+        , array(
+            WorkflowConst::STAMP => 'cwrc:evr'
+            , WorkflowConst::CATEGORY => 'content_contribution'
+            , WorkflowConst::STATUS => 'c'
+          )
+        , '/xslt/entity_to_dc_TEI_support.xsl'
+        , CWRC_ENTITES_PERSON_DS_ID
+        ),
+    );
+  */
 
 
-    // OA Annotatation API
+  // OA Annotatation API
 
   //$items['islandora/markupeditor/oa/mintURI'] = array(
-  $items[CWRC_OPEN_ANNOTATION_API_MINTURI] = array(
+  $items[CWRC_OPEN_ANNOTATION_API_MINTURI] = [
     'title' => 'Open Annotation URI minting',
     'page callback' => 'cwrc_entities_oa_mintURI',
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_oa.inc',
-    'access arguments' => array(CWRC_OPEN_ANNOTATION_CREATE),
-  );
+    'access arguments' => [CWRC_OPEN_ANNOTATION_CREATE],
+  ];
 
-  $items[CWRC_OPEN_ANNOTATION_API_MINTURI . '/%'] = array(
+  $items[CWRC_OPEN_ANNOTATION_API_MINTURI . '/%'] = [
     'title' => 'Open Annotation URI minting',
     'page callback' => 'cwrc_entities_oa_mintURI',
-    'page arguments' => array(4),
+    'page arguments' => [4],
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_oa.inc',
-    'access arguments' => array(CWRC_OPEN_ANNOTATION_CREATE),
-  );
+    'access arguments' => [CWRC_OPEN_ANNOTATION_CREATE],
+  ];
 
-  $items[CWRC_OPEN_ANNOTATION_API_HASTARGET . '%'] = array(
+  $items[CWRC_OPEN_ANNOTATION_API_HASTARGET . '%'] = [
     'title' => 'Open Annotation hasTarget Query',
     'page callback' => 'cwrc_entities_oa_hasTarget',
-    'page arguments' => array(4),
+    'page arguments' => [4],
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_oa.inc',
-    'access arguments' => array(CWRC_OPEN_ANNOTATION_VIEW),
-  );
+    'access arguments' => [CWRC_OPEN_ANNOTATION_VIEW],
+  ];
 
-  $items[CWRC_OPEN_ANNOTATION_API] = array(
+  $items[CWRC_OPEN_ANNOTATION_API] = [
     'title' => 'Open Annotation REST endpoint',
     'page callback' => 'cwrc_entities_oa_annotation',
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_oa.inc',
-    'access arguments' => array(CWRC_OPEN_ANNOTATION_CREATE),
-  );
-  $items[CWRC_OPEN_ANNOTATION_API . '%'] = array(
+    'access arguments' => [CWRC_OPEN_ANNOTATION_CREATE],
+  ];
+  $items[CWRC_OPEN_ANNOTATION_API . '%'] = [
     'title' => 'Open Annotation REST endpoint',
     'page callback' => 'cwrc_entities_oa_annotation',
-    'page arguments' => array(4),
+    'page arguments' => [4],
     'type' => MENU_CALLBACK,
     'file' => 'includes/callbacks_oa.inc',
-    'access arguments' => array(CWRC_OPEN_ANNOTATION_CREATE),
-  );
+    'access arguments' => [CWRC_OPEN_ANNOTATION_CREATE],
+  ];
+
+  $items['islandora/get_entity_collections'] = [
+    'title' => 'Gets entity collections defined at /admin/islandora/cwrc_entities_collections',
+    'page callback' => 'cwrc_entities_get_entity_collections',
+    'type' => MENU_CALLBACK,
+    'access arguments' => ['access content overview'],
+  ];
+
+
+  $items['admin/islandora/cwrc_entities_collections'] = [
+    'title' => 'Entity Collections',
+    'description' => 'Configure settings Entity Collections',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['cwrc_entities_admin_form'],
+    'access arguments' => ['administer site configuration'],
+  ];
 
 
   return $items;
@@ -304,25 +374,130 @@ function cwrc_entities_menu() {
  * Implements hook_permission().
  */
 function cwrc_entities_permission() {
-  return array(
-    CWRC_OPEN_ANNOTATION_VIEW => array(
+  return [
+    CWRC_OPEN_ANNOTATION_VIEW => [
       'title' => t('View open annotations'),
       'description' => t('View open annotations.'),
-    ),
-    CWRC_OPEN_ANNOTATION_CREATE => array(
+    ],
+    CWRC_OPEN_ANNOTATION_CREATE => [
       'title' => t('Create open annotations'),
       'description' => t('Create open Annotations'),
-    ),
-    CWRC_ENTITY_VIEW => array(
+    ],
+    CWRC_ENTITY_VIEW => [
       'title' => t('View entity'),
       'description' => t('View entity'),
-    ),
-    CWRC_ENTITY_CREATE => array(
+    ],
+    CWRC_ENTITY_CREATE => [
       'title' => t('Create entity'),
       'description' => t('Create entity'),
-    ),
-  );
+    ],
+  ];
 }
 
 
+/**
+ *  Implements hook_form().
+ */
+function cwrc_entities_admin_form($form, &$form_state) {
+
+  $form = [];
+
+  $count = variable_get('cwrc_entity_collection_count', 10);
+
+  $form['cwrc_entity_collection_count'] = [
+    '#type' => 'textfield',
+    '#title' => 'Entity Collection Count ',
+    '#maxlength' => 2,
+    '#size' => 3,
+    '#default_value' => $count,
+  ];
+
+  for ($i = 0; $i < $count; $i++) {
+    $form['cwrc_entity_collection' . $i] = [
+      '#type' => 'textfield',
+      '#title' => 'Entity Collection ' . $i,
+      '#maxlength' => 180,
+      '#size' => 60,
+      '#default_value' => variable_get('cwrc_entity_collection' . $i, ''),
+    ];
+  }
+
+  return system_settings_form($form);
+}
+
+
+function cwrc_entities_get_entity_collections() {
+  module_load_include('inc', 'islandora_rest', 'includes/solr');
+  module_load_include('module', 'islandora_rest', 'islandora_rest');
+
+  $query = '';
+
+  $count = variable_get('cwrc_entity_collection_count', 10);
+
+  for ($i = 0; $i < $count; $i++) {
+    $collectionPID = variable_get('cwrc_entity_collection' . $i, '');
+
+    // Collection PID's should be greater than 3 characters.  I would use empty()
+    if (strlen(trim($collectionPID)) > 3) {
+      $query .= 'PID:"' . $collectionPID . '" OR ';
+    }
+  }
+
+  // Remove the final " OR " from the query string
+  $query = substr($query, 0, -4);
+
+
+  if (!empty($query)) {
+    try {
+      $solrRequest = islandora_rest_solr_get_response([
+        'path' => [
+          'query' => $query,
+        ],
+        'request' => [
+          'fl' => 'PID,fgs_label_s',
+        ],
+      ]);
+    }
+    catch (Exception $e) {
+      watchdog('cwrc_entities', 'Invalid Solr request: @message', array('@message' => $e->getMessage()), WATCHDOG_WARNING);
+
+
+    }
+
+    drupal_add_http_header('Content-Type', 'application/json; utf-8');
+    return print drupal_json_encode($solrRequest);
+  }
+  else {
+    watchdog('cwrc_entities', 'Fix the Entity Collection settings at /admin/islandora/cwrc_entities_collections', array(), WATCHDOG_ERROR);
+    return '';
+  }
+
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function cwrc_entities_form_alter(&$form, &$form_state, $form_id) {
+
+  if ($form_id == 'islandora_ingest_form' && !isset($form['models'])) {
+    if (isset($form_state['islandora']['shared_storage']['models'][0])) {
+		$collectionId = $form_state['build_info']['args'][0]['parent'];
+		$collectionId = array('query' => array('collectionId' => $collectionId));
+      switch ($form_state['islandora']['shared_storage']['models'][0]) {
+        case 'cwrc:person-entityCModel':
+          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/person', $collectionId);
+          break;
+        case 'cwrc:place-entityCModel':
+          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/place', $collectionId);
+          break;
+        case 'cwrc:organization-entityCModel':
+          drupal_goto('sites/default/libraries/cwrc-entity-management-forms-static/build/organization', $collectionId);
+          break;
+
+        default:
+      }
+    }
+  }
+}
 
