@@ -89,7 +89,6 @@ function cwrc_entities_rest_api(
         , 'entityToDCXSLT' => $entityToDCXSLT
         , 'dataStreamID' => $dataStreamID
       );
-dpm($parameters, 'paras');
 
       // Can throw 400, 401, 500, etc.
       $response = $response_function($parameters);

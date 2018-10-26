@@ -445,8 +445,22 @@ function cwrc_entities_get_entity_collections() {
 
   // Remove the final " OR " from the query string
   $query = substr($query, 0, -4);
+global $user;
+  if ($user->uid != 0) {
+    $user_name = $user->name;
+  }
+  else {
+    $user_name = 'anonymous';
+  }
 
-
+  $fq = 'RELS_EXT_isManageableByUser_literal_ms:"' . $user_name . '" OR ';
+  
+  foreach ($user->roles as $role) {
+    $fq .= 'RELS_EXT_isManageableByRole_literal_ms:"' . $role . '" OR ';
+  }
+  // Check if the object is open (unrestricted).
+  $fq .= "((*:* -RELS_EXT_isManageableByUser_literal_ms" . ":[* TO *]) AND (*:* -" . "RELS_EXT_isManageableByRole_literal_ms" . ":[* TO *]))";
+  
   if (!empty($query)) {
     try {
       $solrRequest = islandora_rest_solr_get_response([
@@ -455,6 +469,7 @@ function cwrc_entities_get_entity_collections() {
         ],
         'request' => [
           'fl' => 'PID,fgs_label_s',
+          'fq' => $fq,
         ],
       ]);
     }
